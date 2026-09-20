@@ -404,33 +404,28 @@
         </div>
     </div>
 
-    <script>
-        // ── FORCE DEFAULT DARK MODE ON RELOAD ─────────────────────
-        let isLight = false;
-        let gridColor = '255,255,255';
-        
-        // 1. Reset local UI
-        document.body.classList.remove('light-mode');
-        document.getElementById('themeBtn').textContent = '[ LIGHT MODE ]';
-        
-        // 2. Wipe saved memory and force dashboard (parent) to reset
-        try { localStorage.removeItem('bom_theme'); } catch(e) {}
-        if (window.parent && window.parent !== window) {
-            window.parent.postMessage({ type: 'SYNC_THEME', theme: 'dark' }, '*');
+   <script>
+        // ── INDEPENDENT THEME PERSISTENCE ─────────────────────────
+        // 1. Check if the Hub was previously set to Light Mode
+        let isLight = localStorage.getItem('hub_theme') === 'light';
+        let gridColor = isLight ? '0,0,0' : '255,255,255';
+
+        // 2. Apply theme on load
+        if (isLight) {
+            document.body.classList.add('light-mode');
+            document.getElementById('themeBtn').textContent = '[ DARK MODE ]';
+        } else {
+            document.getElementById('themeBtn').textContent = '[ LIGHT MODE ]';
         }
 
-        // ── THEME TOGGLE ──────────────────────────────────────────
         function toggleTheme() {
             isLight = !isLight;
             document.body.classList.toggle('light-mode');
             document.getElementById('themeBtn').textContent = isLight ? '[ DARK MODE ]' : '[ LIGHT MODE ]';
             gridColor = isLight ? '0,0,0' : '255,255,255';
             
-            if (window.parent && window.parent !== window && typeof window.parent.toggleThemeFromChild === 'function') {
-                window.parent.toggleThemeFromChild(isLight);
-            }
-            // If they toggle it, save it temporarily for this session
-            try { localStorage.setItem('bom_theme', isLight ? 'light' : 'dark'); } catch(e) {}
+            // Save ONLY for the Hub. No syncing with Dashboard.
+            localStorage.setItem('hub_theme', isLight ? 'light' : 'dark');
         }
 
         // ── MODULE NAVIGATION ─────────────────────────────────────
@@ -472,15 +467,11 @@
         }
 
         function draw() {
-            // BATTERY SAVER: If on mobile, abort drawing completely. 
-            if (W <= 768) {
-                requestAnimationFrame(draw);
-                return;
-            }
+            // HARD KILLSWITCH: If the window is resized to mobile, kill the animation loop
+            if (window.innerWidth <= 768) return;
 
             ctx.clearRect(0, 0, W, H);
 
-            // Desktop logic only
             node.targetX = mouseX > W / 2 ? 90 : W - 90;
             node.x += (node.targetX - node.x) * 0.018; 
             node.time += 0.005; 
@@ -488,7 +479,6 @@
 
             const obs = getPanelBounds();
 
-            // Draw origin node
             ctx.save();
             ctx.fillStyle   = 'rgba(' + gridColor + ', 0.85)';
             ctx.shadowBlur  = 18;
@@ -496,7 +486,6 @@
             ctx.fillRect(node.x - node.w/2, node.y - node.h/2, node.w, node.h);
             ctx.restore();
 
-            // Routing Lines
             const routes = [
                 [{x: node.x, y: node.y-12}, {x: node.x, y: obs.top-25}, {x: mouseX, y: obs.top-25}, {x: mouseX, y: mouseY}],
                 [{x: node.x, y: node.y- 5}, {x: node.x, y: obs.top   }, {x: mouseX, y: obs.top   }, {x: mouseX, y: mouseY}],
@@ -513,17 +502,11 @@
                 ctx.stroke();
             });
 
-            // Spawn packets
             if (Math.random() > 0.50) {
                 const ri = Math.floor(Math.random() * routes.length);
-                packets.push({
-                    route: routes[ri],
-                    seg: 0, progress: 0,
-                    speed: 0.012 + Math.random() * 0.012 
-                });
+                packets.push({ route: routes[ri], seg: 0, progress: 0, speed: 0.012 + Math.random() * 0.012 });
             }
 
-            // Draw packets
             for (let i = packets.length - 1; i >= 0; i--) {
                 const p = packets[i];
                 p.progress += p.speed;
@@ -548,7 +531,11 @@
 
             requestAnimationFrame(draw);
         }
-        draw();
+        
+        // CRITICAL BOOT LOGIC: Only start the animation engine if on Desktop
+        if (window.innerWidth > 768) {
+            draw();
+        }
     </script>
 </body>
 </html>

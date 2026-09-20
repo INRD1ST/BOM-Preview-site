@@ -179,37 +179,44 @@
 
 @media (max-width: 920px)  { .module-grid { grid-template-columns: repeat(2, 1fr); } }
         
-        /* ═══ MOBILE OVERHAUL (GUTTER STRATEGY) ══════════════════════════════════ */
+        /* ═══ MOBILE OVERHAUL (GUTTER STRATEGY + UX FIXES) ══════════════════════ */
         @media (max-width: 768px) {
-            body {
-                align-items: flex-start; /* Pushes the Hub to the top */
-                padding-top: 15px; /* Tight gap right below the dashboard bar */
-            }
+            body { align-items: flex-start; padding-top: 15px; }
             .module-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .module-card { padding: 16px 10px !important; min-height: 135px !important; }
             .card-num { font-size: 14px !important; margin-bottom: 4px !important; }
             .card-title { font-size: 12px !important; letter-spacing: 1px !important; margin-bottom: 4px !important; }
             .card-desc { font-size: 9px !important; line-height: 1.4 !important; }
             
-            /* Create the 25px side-gutters for the animation to flow through */
-            .hub-wrapper { padding: 0 25px; margin-bottom: 80px; }
+            .hub-wrapper { padding: 0 25px; margin-bottom: 0px; }
             .hub-panel { padding: 20px 15px; }
             
             .hub-title { font-size: 16px; letter-spacing: 1px; }
             .hub-header { flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 15px; margin-bottom: 15px; }
             .hub-meta { text-align: left; }
             
-            /* Bring theme button up to clear Safari/Chrome mobile nav bars */
+            /* Bring theme button up to clear ALL mobile nav bars */
             .theme-btn {
                 top: auto;
-                bottom: 35px; 
+                bottom: 85px; 
                 right: 50%;
                 transform: translateX(50%);
                 background: var(--panel);
                 backdrop-filter: blur(10px);
-                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+                z-index: 1000;
             }
-            .hub-footer { display: none; }
+
+            /* Restore the footer but make it tiny and stacked */
+            .hub-footer { 
+                display: flex !important; 
+                flex-direction: column; 
+                gap: 8px; 
+                font-size: 7px; 
+                text-align: center;
+                margin-top: 15px;
+                padding-top: 12px;
+            }
         }
 
         /* ── MODULE CARD ──────────────────────────────────── */
@@ -433,6 +440,10 @@
         window.addEventListener('mousemove', e => {
             mouseX = e.clientX;
             mouseY = e.clientY;
+        });
+        window.addEventListener('touchmove', e => {
+            mouseX = e.touches[0].clientX;
+            mouseY = e.touches[0].clientY;
         });
 
         const node = {

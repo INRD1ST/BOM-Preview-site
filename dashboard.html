@@ -147,6 +147,60 @@
             padding: 40px; max-width: 580px; width: 100%;
             box-shadow: 0 0 50px rgba(255,255,255,0.04);
         }
+        /* ═══ MOBILE RESPONSIVE ENGINE ══════════════════════════ */
+        @media (max-width: 768px) {
+            /* Restructure Header to 2-Row Layout */
+            .glass-header {
+                grid-template-columns: 1fr auto; 
+                grid-template-rows: auto auto;   
+                height: auto;
+                padding: 12px 16px;
+                gap: 12px;
+            }
+            .brand-title {
+                grid-column: 1 / 2;
+                font-size: 15px;
+                letter-spacing: 2px;
+            }
+            .header-right {
+                grid-column: 2 / 3;
+            }
+            /* Expand FNS Routing Bar to Full Width */
+            .omnibar-wrap {
+                grid-column: 1 / 3; 
+                height: 40px;
+            }
+            .omnibar-prefix {
+                font-size: 9px;
+                padding: 0 10px;
+            }
+            .omnibar {
+                font-size: 11px;
+            }
+            /* Override inline Tailwind for mobile button */
+            #dashboardThemeBtn {
+                font-size: 9px !important;
+                padding: 6px 10px !important;
+            }
+            /* Snap Mother AI Terminal to Mobile Viewport */
+            #aiPanel {
+                width: 100% !important;
+                max-width: 100vw !important;
+                right: 0 !important;
+                border-left: none;
+                border-right: none;
+            }
+            /* Scale Down the Vault Alert Box */
+            .vault-box {
+                padding: 25px;
+                margin: 15px;
+                width: calc(100% - 30px);
+            }
+            .vault-box .text-3xl {
+                font-size: 1.5rem;
+                line-height: 2rem;
+            }
+        }
     </style>
 </head>
 <body>

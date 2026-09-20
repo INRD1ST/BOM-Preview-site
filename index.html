@@ -167,16 +167,15 @@
         body.light-mode .mobile-warning { color: #cc8f00; border-color: rgba(204, 143, 0, 0.3); }
 
         @media (max-width: 768px) {
-            .omni-title { font-size: 38px; letter-spacing: 0.05em; }
-            .subtitle { font-size: 11px; line-height: 1.6; margin-bottom: 30px; }
-            .btn-group { display: flex; flex-direction: column; gap: 15px; }
-            .btn { padding: 15px; font-size: 11px; width: 100%; box-sizing: border-box;}
-            .sys-telemetry { flex-direction: column; gap: 10px; align-items: center; text-align: center; } 
-            .container { padding: 40px 20px; margin: 15px; margin-top: 60px; }
-            .terminal-text { font-size: 10px; }
-            .theme-toggle { top: 60px; right: 15px; font-size: 9px; padding: 6px 10px;}
-            .mobile-warning { display: block; }
-            .top-banner { font-size: 9px; padding: 8px; letter-spacing: 1px; }
+            .omni-title { font-size: 30px; letter-spacing: 0.05em; margin-bottom: 10px; }
+            .subtitle { font-size: 10px; line-height: 1.5; margin-bottom: 25px; padding: 0 10px; }
+            .btn-group { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+            .btn { padding: 14px; font-size: 11px; width: 100%; box-sizing: border-box; text-align: center; }
+            .sys-telemetry { flex-direction: column; gap: 8px; align-items: center; text-align: center; font-size: 9px; } 
+            .container { padding: 30px 15px; margin: 10px; margin-top: 80px; width: calc(100% - 20px); box-sizing: border-box; }
+            .terminal-text { font-size: 9px; margin-bottom: 25px; }
+            .theme-toggle { top: 40px; right: 10px; font-size: 9px; padding: 6px 10px; }
+            .top-banner { font-size: 8px; padding: 8px; letter-spacing: 1px; }
         }
 
         @keyframes glitch {
@@ -255,12 +254,6 @@
 <body>
     <div id="flash-overlay"></div>
     <div class="radial-glow"></div>
-    <!-- MOBILE ACCESS DENIED OVERLAY -->
-    <div id="mobile-denial-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; backdrop-filter: blur(10px);">
-        <h2 style="color: #ff3333; font-size: 28px; letter-spacing: 2px; font-family: 'Orbitron', sans-serif; margin-bottom: 20px;">[ ACCESS DENIED ]</h2>
-        <p style="color: var(--text-muted); font-size: 11px; font-family: 'JetBrains Mono', monospace; line-height: 1.8; max-width: 300px;">BOM OS requires a Desktop Web3 environment (Chrome/Brave + MetaMask) for cryptographic routing.<br><br>Mobile access is restricted to Architecture review.</p>
-        <button onclick="document.getElementById('mobile-denial-overlay').style.display='none';" style="margin-top: 30px; background: transparent; border: 1px solid var(--text-main); color: var(--text-main); padding: 12px 24px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: bold; letter-spacing: 1px; transition: 0.3s;">[ RETURN ]</button>
-    </div>
 
     <div class="top-banner">[ PHASE 1 ALPHA TESTNET LIVE ] // NATIVE BOM OS BROWSER IN DEVELOPMENT</div>
 
@@ -289,10 +282,6 @@
             <a href="architecture-engine.html" class="btn btn-secondary">
                 VIEW_ARCHITECTURE
             </a>
-        </div>
-
-        <div class="mobile-warning">
-            [!] OPTIMIZATION NOTICE: BOM Protocol requires a Desktop Web3 environment (Chrome/Brave + MetaMask extension) for full cryptographic routing and EVM wallet signing.
         </div>
         
         <div class="sys-telemetry" id="sysTelemetry">
@@ -484,11 +473,7 @@
 
         function initMultiverse(e) {
             e.preventDefault();
-            // INTERCEPT MOBILE CLICKS
-            if (window.innerWidth <= 768) {
-                document.getElementById('mobile-denial-overlay').style.display = 'flex';
-                return;
-            }
+            
             const btn = e.currentTarget;
             const targetUrl = btn.getAttribute('href');
             const panel = document.getElementById('main-panel');

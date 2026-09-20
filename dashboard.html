@@ -148,40 +148,63 @@
             box-shadow: 0 0 50px rgba(255,255,255,0.04);
         }
         /* ═══ MOBILE RESPONSIVE ENGINE ══════════════════════════ */
+        /* ═══ MOBILE RESPONSIVE ENGINE ══════════════════════════ */
         @media (max-width: 768px) {
-            /* Restructure Header to 2-Row Layout */
+            /* Restructure Header to strict 2-Row Layout */
             .glass-header {
+                display: grid;
                 grid-template-columns: 1fr auto; 
                 grid-template-rows: auto auto;   
                 height: auto;
-                padding: 12px 16px;
-                gap: 12px;
+                padding: 15px;
+                gap: 15px;
             }
+            
+            /* TOP LEFT: BOM OS Logo */
             .brand-title {
                 grid-column: 1 / 2;
-                font-size: 15px;
+                grid-row: 1 / 2;
+                font-size: 16px;
                 letter-spacing: 2px;
+                margin: 0;
+                align-self: center;
             }
+            
+            /* TOP RIGHT: Theme Toggle & Status Dot */
             .header-right {
                 grid-column: 2 / 3;
+                grid-row: 1 / 2;
+                justify-self: end;
+                align-self: center;
+                gap: 8px;
             }
-            /* Expand FNS Routing Bar to Full Width */
+            
+            /* BOTTOM ROW: Full Width FNS Routing Bar */
             .omnibar-wrap {
                 grid-column: 1 / 3; 
-                height: 40px;
+                grid-row: 2 / 3;
+                height: 44px; /* Slightly taller for mobile thumb tapping */
+                width: 100%;
             }
             .omnibar-prefix {
-                font-size: 9px;
-                padding: 0 10px;
+                font-size: 10px;
+                padding: 0 12px;
             }
             .omnibar {
-                font-size: 11px;
+                font-size: 12px;
             }
+            
             /* Override inline Tailwind for mobile button */
             #dashboardThemeBtn {
                 font-size: 9px !important;
-                padding: 6px 10px !important;
+                padding: 8px 12px !important;
             }
+            
+            /* Hide the EVM text on mobile to save space, keep the green dot */
+            .header-right span.hidden.sm\\:inline {
+                display: none !important; 
+            }
+            
             /* Snap Mother AI Terminal to Mobile Viewport */
             #aiPanel {
                 width: 100% !important;
@@ -190,6 +213,7 @@
                 border-left: none;
                 border-right: none;
             }
+            
             /* Scale Down the Vault Alert Box */
             .vault-box {
                 padding: 25px;

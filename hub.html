@@ -425,7 +425,7 @@
             }
         }
 
-        // ── CANVAS ROUTING ANIMATION (TRUE GUTTER FIX) ────────────
+        // ── CANVAS ROUTING ANIMATION (HARD GUTTER & HIGH-DPI FIX) ──
         const canvas = document.getElementById('bg-canvas');
         const ctx    = canvas.getContext('2d');
         let W, H;
@@ -439,7 +439,11 @@
             mouseY = e.clientY;
         });
         
-        // CRITICAL: Mobile browsers need touch events to track thumbs!
+        // CRITICAL: Listen for both Taps AND Drags on Mobile
+        window.addEventListener('touchstart', e => {
+            mouseX = e.touches[0].clientX;
+            mouseY = e.touches[0].clientY;
+        });
         window.addEventListener('touchmove', e => {
             mouseX = e.touches[0].clientX;
             mouseY = e.touches[0].clientY;
@@ -469,7 +473,7 @@
 
             const isMobile = W <= 768;
 
-            // AXIS LOGIC: Desktop routes around center panel. Mobile lives exclusively in the edges.
+            // AXIS LOGIC: Desktop routes around center panel. Mobile lives strictly in the side gutters.
             if (!isMobile) {
                 node.targetX = mouseX > W / 2 ? 90 : W - 90;
                 node.x += (node.targetX - node.x) * 0.018; 
@@ -478,13 +482,13 @@
                 node.w = 18;
                 node.h = 36;
             } else {
-                // MOBILE: Snap the node strictly to the 12px outer edge so it is NEVER hidden
-                node.targetX = mouseX > W / 2 ? W - 12 : 12;
+                // MOBILE: Lock node to the extreme outer 8px edge (in the black empty gutter)
+                node.targetX = mouseX > W / 2 ? W - 8 : 8;
                 node.x += (node.targetX - node.x) * 0.05; 
                 node.time += 0.005;
-                node.y = H / 2 + Math.sin(node.time) * 60;
-                node.w = 8;  // Make the node thinner to fit the mobile edge
-                node.h = 36;
+                node.y = H / 2 + Math.sin(node.time) * 80;
+                node.w = 6;  // Make the node thin and sleek to fit the edge
+                node.h = 40;
             }
 
             const obs = getPanelBounds();
@@ -507,17 +511,19 @@
                     [{x: node.x, y: node.y+12}, {x: node.x, y: obs.bottom+25}, {x: mouseX, y: obs.bottom+25}, {x: mouseX, y: mouseY}],
                 ];
             } else {
-                // MOBILE: Run lines purely up/down the outer edges, then shoot inward to thumb
+                // MOBILE GUTTER PATHS: Vertical lines track purely down the exposed left/right edges
                 routes = [
                     [{x: node.x, y: node.y}, {x: node.x, y: 20}, {x: mouseX, y: 20}, {x: mouseX, y: mouseY}],
                     [{x: node.x, y: node.y}, {x: node.x, y: H-20}, {x: mouseX, y: H-20}, {x: mouseX, y: mouseY}],
-                    [{x: node.x, y: node.y}, {x: node.x, y: obs.top}, {x: mouseX, y: obs.top}, {x: mouseX, y: mouseY}],
-                    [{x: node.x, y: node.y}, {x: node.x, y: obs.bottom}, {x: mouseX, y: obs.bottom}, {x: mouseX, y: mouseY}],
+                    [{x: node.x, y: node.y}, {x: node.x, y: mouseY}, {x: mouseX, y: mouseY}], // Clean L-shape right to the thumb
+                    [{x: node.x, y: node.y}, {x: node.x, y: H/2}, {x: mouseX, y: H/2}, {x: mouseX, y: mouseY}]
                 ];
             }
 
-            ctx.strokeStyle = 'rgba(' + gridColor + ', 0.15)';
-            ctx.lineWidth   = 1;
+            // Make lines thicker on mobile so Retina screens don't swallow them
+            ctx.strokeStyle = 'rgba(' + gridColor + ', ' + (isMobile ? '0.25' : '0.10') + ')';
+            ctx.lineWidth   = isMobile ? 2 : 1;
+            
             routes.forEach(r => {
                 ctx.beginPath();
                 ctx.moveTo(r[0].x, r[0].y);
@@ -535,6 +541,9 @@
                 });
             }
 
+            // Make the data packets bigger on mobile so they are unmistakable
+            const packetSize = isMobile ? 3.5 : 2.5;
+
             // Draw packets
             for (let i = packets.length - 1; i >= 0; i--) {
                 const p = packets[i];
@@ -549,11 +558,11 @@
                 const py = a.y + (b.y - a.y) * p.progress;
 
                 ctx.save();
-                ctx.shadowBlur  = 12;
-                ctx.shadowColor = 'rgba(' + gridColor + ', 0.9)';
-                ctx.fillStyle   = 'rgba(' + gridColor + ', 0.9)';
+                ctx.shadowBlur  = isMobile ? 16 : 12;
+                ctx.shadowColor = 'rgba(' + gridColor + ', 1)';
+                ctx.fillStyle   = 'rgba(' + gridColor + ', 1)';
                 ctx.beginPath();
-                ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+                ctx.arc(px, py, packetSize, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             }

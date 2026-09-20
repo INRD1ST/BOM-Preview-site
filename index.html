@@ -167,6 +167,10 @@
         body.light-mode .mobile-warning { color: #cc8f00; border-color: rgba(204, 143, 0, 0.3); }
 
         @media (max-width: 768px) {
+            body {
+        align-items: flex-start !important;
+        padding-top: 50px !important; /* Clears the top banner safely */
+    }
             .omni-title { font-size: 30px; letter-spacing: 0.05em; margin-bottom: 10px; }
             .subtitle { font-size: 10px; line-height: 1.5; margin-bottom: 25px; padding: 0 10px; }
             .btn-group { display: flex; flex-direction: column; gap: 12px; width: 100%; }

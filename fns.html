@@ -1,0 +1,593 @@
+﻿﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOM OS - FNS Terminal</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.11.1/ethers.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Orbitron:wght@700;900&display=swap');
+        
+        :root {
+            --bg-dark: #050505;
+            --header-bg: #000000;
+            --border-color: #333333;
+            --accent-main: #ffffff;
+            --accent-muted: #888888;
+            --panel-bg: rgba(10, 10, 12, 0.85);
+        }
+
+        body.light-mode {
+            --bg-dark: #f0f0f5;
+            --header-bg: #ffffff;
+            --border-color: #cccccc;
+            --accent-main: #000000;
+            --accent-muted: #666666;
+            --panel-bg: rgba(255, 255, 255, 0.9);
+        }
+
+        /* High contrast warning for Light Mode */
+        body.light-mode #emptyRoutingWarning {
+            background-color: #fef3c7 !important;
+            border-color: #d97706 !important;
+            color: #92400e !important; /* Deep readable amber */
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--accent-main);
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background-color 0.5s, color 0.5s;
+        }
+
+        .omni-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        body.light-mode .omni-bg {
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 0px;
+            transition: background 0.5s, border-color 0.5s;
+        }
+
+        .input-dark {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--accent-main);
+            border-radius: 0px;
+            padding: 12px;
+            width: 100%;
+            transition: 0.3s;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+        .input-dark:focus {
+            outline: none;
+            border-color: var(--accent-main);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+        body.light-mode .input-dark:focus {
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--accent-main);
+            color: var(--bg-dark);
+            font-weight: 800;
+            padding: 12px 24px;
+            border-radius: 0px;
+            transition: 0.3s;
+            cursor: pointer;
+            text-align: center;
+            letter-spacing: 1px;
+            border: 1px solid var(--accent-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .btn-primary:hover {
+            background: transparent;
+            color: var(--accent-main);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent-main);
+            border: 1px solid var(--border-color);
+            font-weight: 800;
+            padding: 8px 16px;
+            transition: 0.3s;
+            cursor: pointer;
+            text-align: center;
+            letter-spacing: 1px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .btn-secondary:hover {
+            background: var(--accent-main);
+            color: var(--bg-dark);
+            border-color: var(--accent-main);
+        }
+
+        .terminal-box {
+            background: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 0px;
+            padding: 15px;
+            font-size: 11px;
+            color: var(--accent-muted);
+            height: 180px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+        body.light-mode .terminal-box { background: #f5f5f7; color: #444; }
+
+        .pulse-dot {
+            width: 8px; height: 8px;
+            background: var(--accent-main);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); }
+    </style>
+
+    <!-- ═══ BOM OVERMIND INTEGRATION ═══════════════════════════
+         Update OVERMIND_NODES after deploying to Railway/Render
+    ════════════════════════════════════════════════════════════ -->
+    <script>
+        const OVERMIND_NODES = [
+            'https://web-production-d64b0.up.railway.app',
+            'https://bom-overmind-backend.onrender.com'
+        ];
+        let OVERMIND_API = null;
+
+        async function initOvermind() {
+            for (const node of OVERMIND_NODES) {
+                try {
+                    const r = await fetch(node + '/api/health', { signal: AbortSignal.timeout(3000) });
+                    if (r.ok) { OVERMIND_API = node; return node; }
+                } catch {}
+            }
+            console.warn('[OVERMIND] All nodes unreachable — running in blockchain-only mode');
+            return null;
+        }
+
+        async function overmindResolve(namespace) {
+            if (!OVERMIND_API) await initOvermind();
+            if (!OVERMIND_API) return null;
+            try {
+                const r = await fetch(`${OVERMIND_API}/api/resolve/${encodeURIComponent(namespace)}`, { signal: AbortSignal.timeout(4000) });
+                if (r.ok) return r.json();
+            } catch {}
+            return null;
+        }
+
+        async function overmindSearch(query) {
+            if (!OVERMIND_API) await initOvermind();
+            if (!OVERMIND_API) return null;
+            try {
+                const r = await fetch(`${OVERMIND_API}/api/search?q=${encodeURIComponent(query)}`, { signal: AbortSignal.timeout(4000) });
+                if (r.ok) return r.json();
+            } catch {}
+            return null;
+        }
+
+        async function overmindHealth() {
+            if (!OVERMIND_API) await initOvermind();
+            if (!OVERMIND_API) return null;
+            try {
+                const r = await fetch(`${OVERMIND_API}/api/health`, { signal: AbortSignal.timeout(3000) });
+                if (r.ok) return r.json();
+            } catch {}
+            return null;
+        }
+
+        initOvermind();
+    </script>
+</head>
+<body>
+
+    <div class="omni-bg"></div>
+
+    <header class="h-16 border-b border-[var(--border-color)] flex items-center justify-between px-8 shrink-0 glass-panel">
+        <div class="flex items-center gap-4">
+            <h1 class="text-lg font-black orbitron tracking-widest text-[var(--accent-main)]">BOM FNS</h1>
+            <div class="text-[10px] text-[var(--accent-muted)] border border-[var(--border-color)] px-2 py-0.5 font-bold">[ ENTERPRISE CORE ]</div>
+        </div>
+        
+        <div class="flex items-center gap-6">
+            <a href="mother-ai.html" class="btn-secondary">[ MOTHER AI ]</a>
+            <button id="themeToggle" onclick="toggleTheme()" class="btn-secondary">[ LIGHT MODE ]</button>
+            <div id="walletStatus" class="text-xs text-[var(--accent-muted)] font-bold">DISCONNECTED</div>
+            <button id="btnConnect" onclick="connectWallet()" class="btn-primary py-2">CONNECT WALLET</button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 p-8 gap-8 max-w-7xl mx-auto w-full overflow-hidden">
+        
+        <!-- LEFT: Operations Panel -->
+        <div class="flex-1 flex flex-col gap-6 overflow-y-auto pr-2">
+            
+            <!-- Minting Panel -->
+            <div class="glass-panel p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                        <span class="text-[var(--accent-muted)]">[ 01 ]</span> MINT NAMESPACE
+                    </h2>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="text-[10px] text-[var(--accent-muted)] font-bold uppercase mb-2 block">Target String (No Dots)</label>
+                        <input type="text" id="mintName" class="input-dark" placeholder="e.g. logistics" autocomplete="off">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-[var(--accent-muted)] font-bold uppercase mb-2 block">Spatial URI <span class="text-yellow-500 font-bold tracking-widest ml-1">(OPTIONAL)</span></label>
+                        <input type="text" id="mintURI" class="input-dark" placeholder="Leave blank to reserve..." autocomplete="off">
+                    </div>
+                </div>
+                <button onclick="executeMint()" class="btn-primary w-full mt-2" id="btnMint">INITIATE REGISTRATION</button>
+            </div>
+
+            <!-- Resolution & Routing Panel -->
+            <div class="glass-panel p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                        <span class="text-[var(--accent-muted)]">[ 02 ]</span> RESOLVE & EDIT ROUTING
+                    </h2>
+                </div>
+                <div class="flex gap-4 mb-4">
+                    <input type="text" id="resolveName" class="input-dark flex-1" placeholder="Query namespace..." autocomplete="off">
+                    <button onclick="executeResolve()" class="btn-primary w-32" id="btnResolve">QUERY</button>
+                </div>
+
+                <div id="resolveResult" class="hidden mt-4 p-4 border border-[var(--border-color)] bg-black/20">
+                    <div id="emptyRoutingWarning" class="hidden bg-yellow-500/10 border border-yellow-500/50 text-yellow-500 p-3 text-xs mb-4 uppercase tracking-widest font-bold">
+                        ⚠️ ROUTING REQUIRED: This namespace is secured but currently unrouted.
+                    </div>
+
+                    <div class="text-[10px] text-[var(--accent-muted)] mb-1 uppercase font-bold tracking-widest">Owner Address:</div>
+                    <div class="text-xs text-[var(--accent-main)] mono mb-4 break-all" id="resOwner">0x...</div>
+                    
+                    <div class="text-[10px] text-[var(--accent-muted)] mb-1 uppercase font-bold tracking-widest">Current Spatial URI:</div>
+                    <div class="text-xs text-[var(--accent-main)] mono mb-4 break-all" id="resURI">ipfs://...</div>
+
+                    <div class="pt-4 border-t border-[var(--border-color)] mt-2">
+                        <label class="text-[10px] text-[var(--accent-main)] font-bold uppercase mb-2 block">Update Spatial Routing</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="updateURI" class="input-dark text-xs" placeholder="New URI...">
+                            <button onclick="executeUpdate()" class="btn-primary py-2 text-xs" id="btnUpdate">UPDATE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RECORD TAB: Sovereign Portfolio -->
+            <div class="glass-panel p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                        <span class="text-[var(--accent-muted)]">[ 03 ]</span> MY SOVEREIGN PORTFOLIO
+                    </h2>
+                    <button onclick="fetchPortfolio()" class="btn-secondary text-[9px] py-1">REFRESH</button>
+                </div>
+                <div class="text-[11px] text-[var(--accent-muted)] mb-3">Namespaces registered by connected wallet:</div>
+                <div id="portfolioList" class="flex flex-col gap-2 max-h-36 overflow-y-auto pr-1">
+                    <div class="text-xs text-[var(--accent-muted)] italic mono">Connect wallet to load portfolio...</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Telemetry & Terminal -->
+        <div class="w-96 flex flex-col gap-6 shrink-0">
+            <div class="glass-panel p-6">
+                <h2 class="text-xs font-bold uppercase tracking-widest flex items-center gap-2 mb-4">
+                    <span class="text-[var(--accent-muted)]">[ SYS ]</span> TELEMETRY
+                </h2>
+                <div class="flex flex-col gap-3">
+                    <div class="flex justify-between items-center border-b border-[var(--border-color)] pb-2">
+                        <span class="text-[11px] text-[var(--accent-muted)]">LEDGER STATUS</span>
+                        <span class="text-[11px] font-bold flex items-center gap-2"><span class="pulse-dot"></span> SYNCED</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-[var(--border-color)] pb-2">
+                        <span class="text-[11px] text-[var(--accent-muted)]">TARGET RPC</span>
+                        <span class="text-[11px] mono">SEPOLIA</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[11px] text-[var(--accent-muted)]">ROUTING</span>
+                        <span class="text-[11px] font-bold mono">KECCAK-256</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 flex-1 flex flex-col">
+                <h2 class="text-xs font-bold uppercase tracking-widest flex items-center gap-2 mb-4">
+                    <span class="text-[var(--accent-muted)]">[ LOG ]</span> OUTPUT STREAM
+                </h2>
+                <div class="terminal-box flex-1" id="terminal">
+                    <div>> FNS Engine Initialized.</div>
+                    <div>> Awaiting Web3 Authentication...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ═══ PERSISTENT THEME ENGINE ═════════════════════════════
+        let isLight = localStorage.getItem('bom_theme') === 'light';
+        
+        if (window.location.search.includes('theme=light') || (window.parent && window.parent.location.search && window.parent.location.search.includes('theme=light'))) {
+            isLight = true;
+        }
+
+        if (isLight) {
+            document.body.classList.add('light-mode');
+            const themeBtn = document.getElementById('themeToggle');
+            if (themeBtn) themeBtn.innerText = "[ DARK MODE ]";
+        }
+
+        function toggleTheme() {
+            isLight = !isLight;
+            document.body.classList.toggle('light-mode');
+            const currentTheme = isLight ? 'light' : 'dark';
+            document.getElementById('themeToggle').innerText = isLight ? "[ DARK MODE ]" : "[ LIGHT MODE ]";
+            localStorage.setItem('bom_theme', currentTheme);
+            
+            try {
+                if (window.parent && window.parent.toggleThemeFromChild) {
+                    window.parent.toggleThemeFromChild(isLight);
+                }
+            } catch(e) {}
+        }
+
+        const CONTRACT_ADDRESS = "0x9Dd6f41235a3f6D2dcF9a73B5177c14e721432Ff"; 
+        const CONTRACT_ABI = [
+            "function registerFNS(string targetString, string spatialURI) public",
+            "function updateSpatialURI(string targetString, string newSpatialURI) public",
+            "function resolveFNS(string targetString) public view returns (address owner, string spatialURI, bool isVerified)",
+            "function getUserDomains(address user) public view returns (string[] memory)"
+        ];
+
+        let provider, signer, walletAddress, readContract, writeContract;
+
+        // URL Parsing and DELAYED Auto-Connect
+        window.addEventListener('DOMContentLoaded', () => { setTimeout(bootOvermindTelemetry, 1500); });
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            // Theme Check
+            if (window.location.search.includes('theme=light') || (window.parent && window.parent.location.search && window.parent.location.search.includes('theme=light'))) {
+                isLight = true;
+                document.body.classList.add('light-mode');
+                document.getElementById('themeToggle').innerText = "[ DARK MODE ]";
+            }
+
+            // URL Params Deep Link Check
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('mint')) {
+                const mintVal = urlParams.get('mint');
+                document.getElementById('mintName').value = mintVal;
+                logTerminal(`> Auto-loaded unclaimed namespace: '${mintVal}'`);
+            }
+            if (urlParams.has('resolve')) {
+                const resolveVal = urlParams.get('resolve');
+                document.getElementById('resolveName').value = resolveVal;
+                logTerminal(`> Auto-loaded unrouted namespace: '${resolveVal}'`);
+            }
+
+            // 🔥 THE AUTO-CONNECT DELAY FIX 
+            setTimeout(async () => {
+                if (window.ethereum) {
+                    try {
+                        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                        if (accounts && accounts.length > 0) connectWallet(); 
+                    } catch (e) {
+                        console.warn("Silent connect failed", e);
+                    }
+                }
+            }, 500); // Waits half a second for MetaMask to wake up
+        });
+
+        async function connectWallet() {
+            if (!window.ethereum) { logTerminal("Error: MetaMask missing."); return; }
+            try {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = await provider.getSigner();
+                walletAddress = await signer.getAddress();
+                
+                readContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                writeContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                document.getElementById('walletStatus').innerText = `${walletAddress.substring(0,6)}...${walletAddress.substring(38)}`;
+                document.getElementById('btnConnect').style.display = 'none';
+
+                logTerminal(`Auth Success: ${walletAddress}`);
+                logTerminal(`Connected to Registry: ${CONTRACT_ADDRESS}`);
+
+                fetchPortfolio();
+
+                // If redirected here to resolve an empty URI, automatically execute the query now that wallet is connected
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('resolve')) {
+                    executeResolve();
+                }
+
+            } catch (err) {
+                logTerminal(`[!] Auth Failed: ${err.message}`);
+            }
+        }
+
+        async function fetchPortfolio() {
+            if (!readContract || !walletAddress) return;
+            const listEl = document.getElementById('portfolioList');
+            listEl.innerHTML = '<div class="text-xs text-[var(--accent-muted)] animate-pulse mono">Querying ledger for owned names...</div>';
+
+            try {
+                const domains = await readContract.getUserDomains(walletAddress);
+                listEl.innerHTML = '';
+
+                if (domains.length === 0) {
+                    listEl.innerHTML = '<div class="text-xs text-[var(--accent-muted)] mono">No namespaces registered yet.</div>';
+                    return;
+                }
+
+                domains.forEach(domain => {
+                    const row = document.createElement('div');
+                    row.className = 'flex justify-between items-center bg-black/30 border border-[var(--border-color)] p-2 text-xs mono';
+                    row.innerHTML = `
+                        <span class="text-[var(--accent-main)] font-bold">${domain}</span>
+                        <button onclick="document.getElementById('resolveName').value='${domain}'; executeResolve();" class="text-[9px] text-[var(--accent-muted)] hover:text-[var(--accent-main)] underline uppercase">Manage</button>
+                    `;
+                    listEl.appendChild(row);
+                });
+            } catch (err) {
+                listEl.innerHTML = '<div class="text-xs text-red-500 mono">Failed to load portfolio.</div>';
+            }
+        }
+
+        async function executeMint() {
+            if (!writeContract) return logTerminal("Connect wallet first.");
+            const name = document.getElementById('mintName').value.trim().toLowerCase();
+            const uri = document.getElementById('mintURI').value.trim();
+            const btn = document.getElementById('btnMint');
+
+            if (!name) return logTerminal("Error: Target string required.");
+            if (/\s/.test(name)) {
+                logTerminal("> ERROR: Spaces are strictly forbidden in namespaces.");
+                return;
+            }
+            btn.disabled = true; btn.innerText = "MINTING...";
+            logTerminal(`Initiating Keccak-256 hash for '${name}'...`);
+
+            try {
+                const tx = await writeContract.registerFNS(name, uri);
+                logTerminal(`> TX Sent: ${tx.hash.substring(0,15)}... Mining...`);
+                await tx.wait();
+                logTerminal(`> SUCCESS: '${name}' secured on ledger.`);
+                document.getElementById('mintName').value = '';
+                document.getElementById('mintURI').value = '';
+                await fetchPortfolio();
+            } catch (err) {
+                logTerminal(`> ERROR: ${err.reason || "Execution failed."}`);
+            }
+            btn.disabled = false; btn.innerText = "INITIATE REGISTRATION";
+        }
+
+        async function executeResolve() {
+            if (!readContract) return logTerminal("Connect wallet first.");
+            const name = document.getElementById('resolveName').value.trim().toLowerCase();
+            if (!name) return;
+
+            logTerminal(`Querying EVM for '${name}'...`);
+            try {
+                const [owner, uri, isVerified] = await readContract.resolveFNS(name);
+                if (owner === ethers.ZeroAddress) {
+                    logTerminal(`> RESULT: '${name}' is unclaimed.`);
+                    document.getElementById('resolveResult').classList.add('hidden');
+                } else {
+                    logTerminal(`> RESULT: Match found for '${name}'.`);
+                    document.getElementById('resolveResult').classList.remove('hidden');
+                    document.getElementById('resOwner').innerText = owner;
+                    
+                    // NEW LOGIC: Empty URI Warning Display
+                    if (!uri || uri.trim() === "") {
+                        // ── Overmind deep metadata ──────────────────────────
+                    overmindResolve(name).then(data => {
+                        if (!data) return;
+                        let extra = '';
+                        if (data.businessName) extra += '<br><b>Business:</b> ' + data.businessName;
+                        if (data.category)     extra += ' &nbsp;|&nbsp; <b>Category:</b> ' + data.category;
+                        if (data.tags && data.tags.length) extra += '<br><b>Tags:</b> ' + data.tags.join(', ');
+                        if (extra) {
+                            const m = document.createElement('div');
+                            m.style.cssText = 'margin-top:10px;font-size:11px;padding:8px;background:rgba(0,163,255,0.05);border:1px solid rgba(0,163,255,0.2);border-radius:4px;';
+                            m.innerHTML = '[ OVERMIND METADATA ]' + extra;
+                            document.getElementById('resolveResult').appendChild(m);
+                        }
+                    });
+                    document.getElementById('resURI').innerText = "NULL (UNROUTED)";
+                        document.getElementById('emptyRoutingWarning').classList.remove('hidden');
+                    } else {
+                        document.getElementById('resURI').innerText = uri;
+                        document.getElementById('emptyRoutingWarning').classList.add('hidden');
+                    }
+                }
+            } catch (err) {
+                logTerminal(`> ERROR: Resolution failed.`);
+            }
+        }
+
+        async function executeUpdate() {
+            if (!writeContract) return;
+            const name = document.getElementById('resolveName').value.trim().toLowerCase();
+            const uri = document.getElementById('updateURI').value.trim();
+            const btn = document.getElementById('btnUpdate');
+
+            if (!uri) return;
+            btn.disabled = true; btn.innerText = "UPDATING...";
+
+            try {
+                const tx = await writeContract.updateSpatialURI(name, uri);
+                logTerminal(`> Updating URI... TX: ${tx.hash.substring(0,10)}...`);
+                await tx.wait();
+                logTerminal(`> SUCCESS: Routing updated.`);
+                document.getElementById('updateURI').value = '';
+                executeResolve();
+            } catch (err) {
+                logTerminal(`> ERROR: ${err.reason || "Failed."}`);
+            }
+            btn.disabled = false; btn.innerText = "UPDATE";
+        }
+
+        async function bootOvermindTelemetry() {
+            const statusEl = document.querySelector('[data-overmind-status]');
+            const node = await initOvermind();
+            if (node) {
+                logTerminal('[OVERMIND] [ SECURE CLOUD NODE ] ACTIVE & SYNCHRONIZED');
+                if (statusEl) { statusEl.textContent = 'ONLINE'; statusEl.style.color = '#00e575'; }
+            } else {
+                logTerminal('[OVERMIND] [ SECURE CLOUD NODE ] UNREACHABLE — LEDGER MODE ACTIVE');
+                if (statusEl) { statusEl.textContent = 'OFFLINE'; statusEl.style.color = '#888'; }
+            }
+        }
+
+        function logTerminal(msg) {
+            const t = document.getElementById('terminal');
+            t.innerHTML += `<div>> ${msg}</div>`;
+            t.scrollTop = t.scrollHeight;
+        }
+    </script>
+</body>
+</html>

@@ -430,12 +430,24 @@
         function draw() {
             ctx.clearRect(0, 0, W, H);
 
-            // Smoothly slide node (x-axis follows mouse side, y-axis floats)
-            node.x += (node.targetX - node.x) * 0.018;  // slower
-            node.time += 0.005;                           // slower vertical drift
-            node.y = H / 2 + Math.sin(node.time) * 60;
+            const isMobile = W <= 768;
 
-            node.targetX = mouseX > W / 2 ? 90 : W - 90;
+            // AXIS LOGIC: Desktop (Horizontal) vs Mobile (Vertical)
+            if (!isMobile) {
+                node.targetX = mouseX > W / 2 ? 90 : W - 90;
+                node.x += (node.targetX - node.x) * 0.018; 
+                node.time += 0.005; 
+                node.y = H / 2 + Math.sin(node.time) * 60;
+                node.w = 18;
+                node.h = 36;
+            } else {
+                node.targetY = mouseY > H / 2 ? 90 : H - 90;
+                node.y += (node.targetY - (node.y || H/2)) * 0.018;
+                node.time += 0.005;
+                node.x = W / 2 + Math.sin(node.time) * 60;
+                node.w = 36;
+                node.h = 18;
+            }
 
             const obs = getPanelBounds();
 
@@ -444,15 +456,20 @@
             ctx.fillStyle   = 'rgba(' + gridColor + ', 0.85)';
             ctx.shadowBlur  = 18;
             ctx.shadowColor = 'rgba(' + gridColor + ', 1)';
-            ctx.fillRect(node.x - node.w/2, node.y - node.h/2, node.w, node.h);
+            ctx.fillRect(node.x - node.w/2, (node.y || H/2) - node.h/2, node.w, node.h);
             ctx.restore();
 
-            // 4 routing lines, panel-avoiding
-            const routes = [
+            // DYNAMIC ROUTING PATHS
+            const routes = !isMobile ? [
                 [{x: node.x, y: node.y-12}, {x: node.x, y: obs.top-25}, {x: mouseX, y: obs.top-25}, {x: mouseX, y: mouseY}],
                 [{x: node.x, y: node.y- 5}, {x: node.x, y: obs.top   }, {x: mouseX, y: obs.top   }, {x: mouseX, y: mouseY}],
                 [{x: node.x, y: node.y+ 5}, {x: node.x, y: obs.bottom}, {x: mouseX, y: obs.bottom}, {x: mouseX, y: mouseY}],
                 [{x: node.x, y: node.y+12}, {x: node.x, y: obs.bottom+25}, {x: mouseX, y: obs.bottom+25}, {x: mouseX, y: mouseY}],
+            ] : [
+                [{x: node.x-12, y: node.y}, {x: obs.left-25, y: node.y}, {x: obs.left-25, y: mouseY}, {x: mouseX, y: mouseY}],
+                [{x: node.x- 5, y: node.y}, {x: obs.left, y: node.y}, {x: obs.left, y: mouseY}, {x: mouseX, y: mouseY}],
+                [{x: node.x+ 5, y: node.y}, {x: obs.right, y: node.y}, {x: obs.right, y: mouseY}, {x: mouseX, y: mouseY}],
+                [{x: node.x+12, y: node.y}, {x: obs.right+25, y: node.y}, {x: obs.right+25, y: mouseY}, {x: mouseX, y: mouseY}],
             ];
 
             ctx.strokeStyle = 'rgba(' + gridColor + ', 0.10)';
@@ -464,13 +481,13 @@
                 ctx.stroke();
             });
 
-            // Spawn packets at reduced rate for calmer feel
+            // Spawn packets
             if (Math.random() > 0.50) {
                 const ri = Math.floor(Math.random() * routes.length);
                 packets.push({
                     route: routes[ri],
                     seg: 0, progress: 0,
-                    speed: 0.012 + Math.random() * 0.012  // 2× slower than index.html
+                    speed: 0.012 + Math.random() * 0.012 
                 });
             }
 

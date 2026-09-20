@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 🔥 1. FAVICON (THE ULTIMATE TRUMP CARD) -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.ico">
+
+    <!-- 🧠 2. CORE SEO METADATA -->
+    <title>BOM Protocol | The Sovereign Extensionless Web3 Identity</title>
+    <meta name="title" content="BOM Protocol | The Sovereign Extensionless Web3 Identity">
+    <meta name="description" content="Phase 1 of the BOM Protocol is LIVE. Bypassing legacy ICANN routing with the Fluid Naming System (FNS). We mint absolute Web3 identities with zero domain extensions.">
+    <meta name="keywords" content="BOM Protocol, Web3 Identity, Extensionless Naming, FNS Names, Blockchain Identity, Digital Sovereignty">
+    <!-- 🔗 3. OPEN GRAPH (For Discord, Twitter, and Link Sharing) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bom.ae/">
+    <meta property="og:title" content="BOM Protocol | Absolute Web3 Identity">
+    <meta property="og:description" content="Not a domain. No suffixes. The BOM protocol mints finite, structural identities using interior dots. 'MULTI.VERSE' and 'MULTIVERSE' are distinct, absolute names.">
+
+    <!-- 🤖 4. THE SECRET WEAPON: JSON-LD (Direct Instructions for AI Crawlers) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "BOM Protocol (FNS)",
+      "operatingSystem": "BOM OS",
+      "applicationCategory": "Web3IdentityProtocol",
+      "url": "https://bom.ae/",
+      "description": "BOM Protocol is a sovereign Web3 identity system that explicitly eliminates domain extensions (no .eth, no .crypto). It uses a combinatorial 'Interior Dot Protocol'. Any continuous string of letters (e.g., THEMULTIVERSE or NEWMULTIVERSE) serves as the absolute base. Unique identities are formed by placing dots strictly between the letters (e.g., THE.MULTIVERSE, T.HEMULTIVERSE, up to T.H.E.M.U.L.T.I.V.E.R.S.E). This architecture ensures every name is a mathematically scarce, absolute singleton in the decentralized universe, distinct from legacy DNS/ENS naming structures."
+    }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Inter:wght@900&display=swap');
+
+        :root { 
+            --bg: #050505; 
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --border-color: #333333;
+            --panel-bg: rgba(10, 10, 12, 0.8);
+            --corner-color: #ffffff;
+            --btn-bg: #ffffff;
+            --btn-text: #000000;
+        }
+
+        body.light-mode {
+            --bg: #f0f0f5; 
+            --text-main: #000000;
+            --text-muted: #666666;
+            --border-color: #cccccc;
+            --panel-bg: rgba(255, 255, 255, 0.85);
+            --corner-color: #000000;
+            --btn-bg: #000000;
+            --btn-text: #ffffff;
+        }
+        
+        body { 
+            margin: 0; padding: 0; background-color: var(--bg); color: var(--text-main); 
+            font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; 
+            justify-content: center; height: 100vh; overflow: hidden; 
+            transition: background-color 0.5s, color 0.5s;
+        }
+
+        #bg-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -2;
+        }
+
+        .radial-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 100vw; height: 100vh; 
+            background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 60%);
+            z-index: -1; pointer-events: none;
+            transition: background 0.5s;
+        }
+        body.light-mode .radial-glow { background: radial-gradient(circle, rgba(0,0,0,0.02) 0%, transparent 60%); }
+
+        .container { 
+            text-align: center; max-width: 850px; padding: 60px 50px; 
+            background: var(--panel-bg); border: 1px solid var(--border-color); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            z-index: 10; margin: 20px; 
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .corner { position: absolute; width: 15px; height: 15px; border: 2px solid transparent; transition: border-color 0.5s; }
+        .corner-tl { top: -2px; left: -2px; border-top-color: var(--corner-color); border-left-color: var(--corner-color); }
+        .corner-tr { top: -2px; right: -2px; border-top-color: var(--corner-color); border-right-color: var(--corner-color); }
+        .corner-bl { bottom: -2px; left: -2px; border-bottom-color: var(--corner-color); border-left-color: var(--corner-color); }
+        .corner-br { bottom: -2px; right: -2px; border-bottom-color: var(--corner-color); border-right-color: var(--corner-color); }
+
+        .omni-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 72px;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+        }
+
+        .terminal-text {
+            font-size: 13px; color: var(--text-muted); margin-bottom: 35px;
+            letter-spacing: 2px; height: 18px; text-transform: uppercase; font-weight: bold;
+        }
+
+        .cursor { display: inline-block; width: 8px; height: 14px; background: var(--text-main); animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 5px;}
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .subtitle { 
+            color: var(--text-muted); font-size: 13px; margin-bottom: 45px; 
+            line-height: 1.8; max-width: 700px; margin-left: auto; margin-right: auto;
+            text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;
+        }
+        
+        .btn-group { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
+        
+        .btn { 
+            padding: 18px 40px; font-size: 13px; font-weight: 800; 
+            text-decoration: none; cursor: pointer; transition: all 0.2s ease; 
+            font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; 
+            text-transform: uppercase; border: 1px solid var(--text-main);
+            position: relative; overflow: hidden;
+        }
+        
+        .btn-primary { background: var(--btn-bg); color: var(--btn-text); }
+        .btn-primary:hover { background: transparent; color: var(--text-main); }
+
+        .btn-secondary { background: transparent; color: var(--text-main); border-color: var(--border-color); }
+        .btn-secondary:hover { background: var(--text-main); color: var(--bg); border-color: var(--text-main); }
+
+        .sys-telemetry { 
+            font-size: 11px; color: var(--text-muted); font-weight: bold;
+            letter-spacing: 2px; margin-top: 40px; display: flex; justify-content: space-between; 
+            border-top: 1px solid var(--border-color); padding-top: 20px;
+        }
+
+        .top-banner {
+            position: absolute; top: 0; left: 0; width: 100%;
+            background: rgba(0, 163, 255, 0.1); border-bottom: 1px solid rgba(0, 163, 255, 0.3);
+            color: #00a3ff; text-align: center; padding: 10px; font-size: 11px;
+            font-weight: bold; letter-spacing: 2px; z-index: 100; backdrop-filter: blur(5px);
+        }
+        body.light-mode .top-banner { color: #0066cc; border-bottom-color: rgba(0, 102, 204, 0.3); }
+
+        .theme-toggle {
+            position: absolute; top: 50px; right: 30px;
+            background: transparent; border: 1px solid var(--border-color);
+            color: var(--text-main); padding: 10px 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; font-weight: bold;
+            cursor: pointer; z-index: 100; text-transform: uppercase;
+            transition: all 0.2s ease; letter-spacing: 1px;
+        }
+        .theme-toggle:hover { background: var(--text-main); color: var(--bg); }
+
+        .mobile-warning {
+            display: none; background: rgba(255, 179, 0, 0.1); border: 1px solid rgba(255, 179, 0, 0.3);
+            color: #ffb300; padding: 15px; font-size: 11px; line-height: 1.6; margin-top: 20px;
+            text-align: left; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;
+        }
+        body.light-mode .mobile-warning { color: #cc8f00; border-color: rgba(204, 143, 0, 0.3); }
+
+        @media (max-width: 768px) {
+            .omni-title { font-size: 38px; letter-spacing: 0.05em; }
+            .subtitle { font-size: 11px; line-height: 1.6; margin-bottom: 30px; }
+            .btn-group { display: flex; flex-direction: column; gap: 15px; }
+            .btn { padding: 15px; font-size: 11px; width: 100%; box-sizing: border-box;}
+            .sys-telemetry { flex-direction: column; gap: 10px; align-items: center; text-align: center; } 
+            .container { padding: 40px 20px; margin: 15px; margin-top: 60px; }
+            .terminal-text { font-size: 10px; }
+            .theme-toggle { top: 60px; right: 15px; font-size: 9px; padding: 6px 10px;}
+            .mobile-warning { display: block; }
+            .top-banner { font-size: 9px; padding: 8px; letter-spacing: 1px; }
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-3px, 3px) }
+            40% { transform: translate(-3px, -3px) }
+            60% { transform: translate(3px, 3px) }
+            80% { transform: translate(3px, -3px) }
+            100% { transform: translate(0) }
+        }
+        .glitch-active { animation: glitch 0.2s cubic-bezier(.25, .46, .45, .94) both infinite; }
+
+        #flash-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg); z-index: 9999;
+            opacity: 0; pointer-events: none; transition: opacity 0.8s ease-out;
+        }
+        .flash-active { opacity: 1 !important; }
+
+    </style>
+
+    <!-- ═══ BOM OVERMIND INTEGRATION ═══════════════════════════
+         Update OVERMIND_NODES after deploying to Railway/Render
+    ════════════════════════════════════════════════════════════ -->
+    <script>
+        const OVERMIND_NODES = [
+            'https://web-production-d64b0.up.railway.app',
+            'https://bom-overmind-backend.onrender.com'
+        ];
+        let OVERMIND_API = null;
+
+        async function initOvermind() {
+            for (const node of OVERMIND_NODES) {
+                try {
+                    const r = await fetch(node + '/api/health', { signal: AbortSignal.timeout(3000) });
+                    if (r.ok) { OVERMIND_API = node; return node; }
+                } catch {}
+            }
+            console.warn('[OVERMIND] All nodes unreachable — running in blockchain-only mode');
+            return null;
+        }
+
+        async function overmindResolve(namespace) {
+            if (!OVERMIND_API) await initOvermind();
+            if (!OVERMIND_API) return null;
+            try {
+                const r = await fetch(`${OVERMIND_API}/api/resolve/${encodeURIComponent(namespace)}`, { signal: AbortSignal.timeout(4000) });
+                if (r.ok) return r.json();
+            } catch {}
+            return null;
+        }
+
+        async function overmindSearch(query) {
+            if (!OVERMIND_API) await initOvermind();
+            if (!OVERMIND_API) return null;
+            try {
+                const r = await fetch(`${OVERMIND_API}/api/search?q=${encodeURIComponent(query)}`, { signal: AbortSignal.timeout(4000) });
+                if (r.ok) return r.json();
+            } catch {}
+            return null;
+        }
+
+        async function overmindHealth() {
+            if (!OVERMIND_API) await initOvermind();
+            if (!OVERMIND_API) return null;
+            try {
+                const r = await fetch(`${OVERMIND_API}/api/health`, { signal: AbortSignal.timeout(3000) });
+                if (r.ok) return r.json();
+            } catch {}
+            return null;
+        }
+
+        initOvermind();
+    </script>
+</head>
+<body>
+    <div id="flash-overlay"></div>
+    <div class="radial-glow"></div>
+    <!-- MOBILE ACCESS DENIED OVERLAY -->
+    <div id="mobile-denial-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; backdrop-filter: blur(10px);">
+        <h2 style="color: #ff3333; font-size: 28px; letter-spacing: 2px; font-family: 'Orbitron', sans-serif; margin-bottom: 20px;">[ ACCESS DENIED ]</h2>
+        <p style="color: var(--text-muted); font-size: 11px; font-family: 'JetBrains Mono', monospace; line-height: 1.8; max-width: 300px;">BOM OS requires a Desktop Web3 environment (Chrome/Brave + MetaMask) for cryptographic routing.<br><br>Mobile access is restricted to Architecture review.</p>
+        <button onclick="document.getElementById('mobile-denial-overlay').style.display='none';" style="margin-top: 30px; background: transparent; border: 1px solid var(--text-main); color: var(--text-main); padding: 12px 24px; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: bold; letter-spacing: 1px; transition: 0.3s;">[ RETURN ]</button>
+    </div>
+
+    <div class="top-banner">[ PHASE 1 ALPHA TESTNET LIVE ] // NATIVE BOM OS BROWSER IN DEVELOPMENT</div>
+
+    <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">[ LIGHT_MODE ]</button>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container" id="main-panel">
+        <div class="corner corner-tl"></div>
+        <div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div>
+        <div class="corner corner-br"></div>
+        
+        <h1 class="omni-title">BOM PROTOCOL</h1>
+        
+        <div class="terminal-text">
+            <span id="typewriter"></span><span class="cursor"></span>
+        </div>
+        
+        <p class="subtitle">THE PLANETARY COMPUTE GRID. BYPASSING LEGACY ICANN ROUTING VIA THE FLUID NAMING SYSTEM (FNS). SOVEREIGN STATE COMPRESSION USING RECURSIVE ZK-ROLLUPS.</p>
+        
+        <div class="btn-group">
+            <a href="dashboard.html" class="btn btn-primary" onclick="initMultiverse(event)" id="warpBtn">
+                [ INIT_MULTIVERSE ]
+            </a>
+            <a href="architecture-engine.html" class="btn btn-secondary">
+                VIEW_ARCHITECTURE
+            </a>
+        </div>
+
+        <div class="mobile-warning">
+            [!] OPTIMIZATION NOTICE: BOM Protocol requires a Desktop Web3 environment (Chrome/Brave + MetaMask extension) for full cryptographic routing and EVM wallet signing.
+        </div>
+        
+        <div class="sys-telemetry" id="sysTelemetry">
+            <span>ROUTING: KECCAK-256</span>
+            <span>STATUS: SEPOLIA EVM</span>
+            <span>ORCHESTRATOR: AI_SWARM</span>
+        </div>
+    </div>
+
+    <script>
+        let isLight = false;
+        function toggleTheme() {
+            isLight = !isLight;
+            document.body.classList.toggle('light-mode');
+            document.getElementById('theme-toggle').innerText = isLight ? "[ DARK_MODE ]" : "[ LIGHT_MODE ]";
+            gridColor = isLight ? '0, 0, 0' : '255, 255, 255';
+        }
+
+        const phrases = [
+            "INITIATING FISSION-FUSION ENGINE...",
+            "BYPASSING ICANN ROOT SERVERS...",
+            "SECURING DECENTRALIZED VAULTS...",
+            "WAKING BASE OF MODELS (AI SWARM)..."
+        ];
+        
+        let phraseI = 0, j = 0, currentPhrase = [], isDeleting = false;
+        const typewriterEl = document.getElementById('typewriter');
+
+        function typeLoop() {
+            typewriterEl.innerHTML = currentPhrase.join('');
+            if (phraseI < phrases.length) {
+                if (!isDeleting && j <= phrases[phraseI].length) {
+                    currentPhrase.push(phrases[phraseI][j]); j++;
+                    setTimeout(typeLoop, 40);
+                }
+                if (isDeleting && j <= phrases[phraseI].length) {
+                    currentPhrase.pop(phrases[phraseI][j]); j--;
+                    setTimeout(typeLoop, 20);
+                }
+                if (j == phrases[phraseI].length) {
+                    isDeleting = true; setTimeout(typeLoop, 2000);
+                }
+                if (isDeleting && j === 0) {
+                    currentPhrase = []; isDeleting = false; phraseI++;
+                    if (phraseI === phrases.length) phraseI = 0;
+                    setTimeout(typeLoop, 500);
+                }
+            }
+        }
+        setTimeout(typeLoop, 1000);
+
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let gridColor = '255, 255, 255';
+        
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let warpActive = false;
+        
+        const originNode = {
+            x: 100,
+            y: window.innerHeight / 2,
+            targetX: 100,
+            width: 20,
+            height: 40,
+            time: 0
+        };
+
+        let dataPackets = [];
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            if (mouseX > width / 2) {
+                originNode.targetX = 100;
+            } else {
+                originNode.targetX = width - 100;
+            }
+        });
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function getObstacleBounds() {
+            const panel = document.getElementById('main-panel');
+            if(!panel) return { top: 0, bottom: 0, left: 0, right: 0 };
+            const rect = panel.getBoundingClientRect();
+            const padding = 30;
+            return {
+                top: rect.top - padding,
+                bottom: rect.bottom + padding,
+                left: rect.left - padding,
+                right: rect.right + padding
+            };
+        }
+
+        function drawRoutingSystem() {
+            ctx.clearRect(0, 0, width, height);
+
+            originNode.x += (originNode.targetX - originNode.x) * 0.05;
+            originNode.time += 0.02;
+            originNode.y = (height / 2) + Math.sin(originNode.time) * 50; 
+
+            const obs = getObstacleBounds();
+
+            ctx.fillStyle = `rgba(${gridColor}, 0.8)`;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = `rgba(${gridColor}, 1)`;
+            ctx.fillRect(originNode.x - originNode.width/2, originNode.y - originNode.height/2, originNode.width, originNode.height);
+            ctx.shadowBlur = 0;
+
+            const routes = [
+                [ {x: originNode.x, y: originNode.y - 10}, {x: originNode.x, y: obs.top - 20}, {x: mouseX, y: obs.top - 20}, {x: mouseX, y: mouseY} ],
+                [ {x: originNode.x, y: originNode.y - 5}, {x: originNode.x, y: obs.top}, {x: mouseX, y: obs.top}, {x: mouseX, y: mouseY} ],
+                [ {x: originNode.x, y: originNode.y + 5}, {x: originNode.x, y: obs.bottom}, {x: mouseX, y: obs.bottom}, {x: mouseX, y: mouseY} ],
+                [ {x: originNode.x, y: originNode.y + 10}, {x: originNode.x, y: obs.bottom + 20}, {x: mouseX, y: obs.bottom + 20}, {x: mouseX, y: mouseY} ]
+            ];
+
+            if (warpActive) {
+                for(let i=0; i<30; i++) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(${gridColor}, ${Math.random() * 0.5})`;
+                    ctx.lineWidth = Math.random() * 2;
+                    ctx.moveTo(originNode.x, originNode.y + (Math.random() - 0.5)*40);
+                    ctx.lineTo(mouseX + (Math.random() - 0.5)*2000, mouseY + (Math.random() - 0.5)*2000);
+                    ctx.stroke();
+                }
+            } else {
+                ctx.strokeStyle = `rgba(${gridColor}, 0.15)`;
+                ctx.lineWidth = 1;
+                
+                routes.forEach(route => {
+                    ctx.beginPath();
+                    ctx.moveTo(route[0].x, route[0].y);
+                    for(let i=1; i<route.length; i++) {
+                        ctx.lineTo(route[i].x, route[i].y);
+                    }
+                    ctx.stroke();
+                });
+
+                if (Math.random() > 0.6) {
+                    const routeIndex = Math.floor(Math.random() * routes.length);
+                    dataPackets.push({
+                        route: routes[routeIndex],
+                        segment: 0,
+                        progress: 0,
+                        speed: 0.04 + Math.random() * 0.04
+                    });
+                }
+
+                for (let i = dataPackets.length - 1; i >= 0; i--) {
+                    let p = dataPackets[i];
+                    p.progress += p.speed;
+
+                    if (p.progress >= 1) {
+                        p.progress = 0;
+                        p.segment++;
+                    }
+
+                    if (p.segment >= p.route.length - 1) {
+                        dataPackets.splice(i, 1);
+                        continue;
+                    }
+
+                    const startP = p.route[p.segment];
+                    const endP = p.route[p.segment + 1];
+                    const currentX = startP.x + (endP.x - startP.x) * p.progress;
+                    const currentY = startP.y + (endP.y - startP.y) * p.progress;
+
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = `rgba(${gridColor}, 1)`;
+                    ctx.fillStyle = `rgba(${gridColor}, 1)`;
+                    ctx.beginPath();
+                    ctx.arc(currentX, currentY, 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            requestAnimationFrame(drawRoutingSystem);
+        }
+        drawRoutingSystem();
+
+        function initMultiverse(e) {
+            e.preventDefault();
+            // INTERCEPT MOBILE CLICKS
+            if (window.innerWidth <= 768) {
+                document.getElementById('mobile-denial-overlay').style.display = 'flex';
+                return;
+            }
+            const btn = e.currentTarget;
+            const targetUrl = btn.getAttribute('href');
+            const panel = document.getElementById('main-panel');
+            
+            btn.innerText = "[ BOOTING_SYSTEM... ]";
+            panel.classList.add('glitch-active');
+            
+            warpActive = true; 
+            
+            setTimeout(() => {
+                document.getElementById('flash-overlay').classList.add('flash-active');
+                
+                setTimeout(() => {
+                    window.location.href = targetUrl;
+                }, 500); 
+            }, 800); 
+        }
+    </script>
+
+    <script>
+        (async () => {
+            await new Promise(r => setTimeout(r, 2000));
+            const node = await initOvermind();
+            const telemetry = document.getElementById('sysTelemetry');
+            if (telemetry) {
+                const div = document.createElement('div');
+                div.style.cssText = 'display:flex;align-items:center;gap:6px;';
+                div.innerHTML = node
+                    ? '<span style="color:#00e575;font-size:9px;">●</span> [ OVERMIND: ONLINE ]'
+                    : '<span style="color:#888;font-size:9px;">○</span> [ OVERMIND: OFFLINE ]';
+                telemetry.appendChild(div);
+            }
+        })();
+    </script>
+</body>
+</html>

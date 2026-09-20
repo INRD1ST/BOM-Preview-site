@@ -425,10 +425,7 @@
             }
         }
 
-        // ── CANVAS ROUTING ANIMATION ──────────────────────────────
-        // Adapted from index.html — origin node floats, routes arc
-        // toward mouse cursor, animated data packets travel the lines.
-        // Slowed ~2.5× and eased for fluid feel.
+        // ── CANVAS ROUTING ANIMATION (TRUE GUTTER FIX) ────────────
         const canvas = document.getElementById('bg-canvas');
         const ctx    = canvas.getContext('2d');
         let W, H;
@@ -441,18 +438,14 @@
             mouseX = e.clientX;
             mouseY = e.clientY;
         });
+        
+        // CRITICAL: Mobile browsers need touch events to track thumbs!
         window.addEventListener('touchmove', e => {
             mouseX = e.touches[0].clientX;
             mouseY = e.touches[0].clientY;
         });
 
-        const node = {
-            x: 80, y: 0,
-            targetX: 80,
-            time: 0,
-            w: 18, h: 36
-        };
-
+        const node = { x: 80, y: 0, targetX: 80, time: 0, w: 18, h: 36 };
         let packets = [];
 
         function resize() {
@@ -471,12 +464,12 @@
             return { top: r.top - pad, bottom: r.bottom + pad, left: r.left - pad, right: r.right + pad };
         }
 
-       function draw() {
+        function draw() {
             ctx.clearRect(0, 0, W, H);
 
             const isMobile = W <= 768;
 
-            // AXIS LOGIC: Desktop (Horizontal) vs Mobile (Vertical)
+            // AXIS LOGIC: Desktop routes around center panel. Mobile lives exclusively in the edges.
             if (!isMobile) {
                 node.targetX = mouseX > W / 2 ? 90 : W - 90;
                 node.x += (node.targetX - node.x) * 0.018; 
@@ -485,12 +478,13 @@
                 node.w = 18;
                 node.h = 36;
             } else {
-                node.targetY = mouseY > H / 2 ? 90 : H - 90;
-                node.y += (node.targetY - (node.y || H/2)) * 0.018;
+                // MOBILE: Snap the node strictly to the 12px outer edge so it is NEVER hidden
+                node.targetX = mouseX > W / 2 ? W - 12 : 12;
+                node.x += (node.targetX - node.x) * 0.05; 
                 node.time += 0.005;
-                node.x = W / 2 + Math.sin(node.time) * 40;
-                node.w = 36;
-                node.h = 10;
+                node.y = H / 2 + Math.sin(node.time) * 60;
+                node.w = 8;  // Make the node thinner to fit the mobile edge
+                node.h = 36;
             }
 
             const obs = getPanelBounds();
@@ -500,22 +494,27 @@
             ctx.fillStyle   = 'rgba(' + gridColor + ', 0.85)';
             ctx.shadowBlur  = 18;
             ctx.shadowColor = 'rgba(' + gridColor + ', 1)';
-            ctx.fillRect(node.x - node.w/2, (node.y || H/2) - node.h/2, node.w, node.h);
+            ctx.fillRect(node.x - node.w/2, node.y - node.h/2, node.w, node.h);
             ctx.restore();
 
-            // DYNAMIC ROUTING PATHS (The Gutter Strategy)
-            const routes = !isMobile ? [
-                [{x: node.x, y: node.y-12}, {x: node.x, y: obs.top-25}, {x: mouseX, y: obs.top-25}, {x: mouseX, y: mouseY}],
-                [{x: node.x, y: node.y- 5}, {x: node.x, y: obs.top   }, {x: mouseX, y: obs.top   }, {x: mouseX, y: mouseY}],
-                [{x: node.x, y: node.y+ 5}, {x: node.x, y: obs.bottom}, {x: mouseX, y: obs.bottom}, {x: mouseX, y: mouseY}],
-                [{x: node.x, y: node.y+12}, {x: node.x, y: obs.bottom+25}, {x: mouseX, y: obs.bottom+25}, {x: mouseX, y: mouseY}],
-            ] : [
-                // Force lines to run strictly down the far left (X=10, 18) and far right (W-10, W-18) edges
-                [{x: node.x, y: node.y}, {x: 10, y: node.y}, {x: 10, y: mouseY}, {x: mouseX, y: mouseY}],
-                [{x: node.x, y: node.y}, {x: 18, y: node.y}, {x: 18, y: mouseY}, {x: mouseX, y: mouseY}],
-                [{x: node.x, y: node.y}, {x: W - 18, y: node.y}, {x: W - 18, y: mouseY}, {x: mouseX, y: mouseY}],
-                [{x: node.x, y: node.y}, {x: W - 10, y: node.y}, {x: W - 10, y: mouseY}, {x: mouseX, y: mouseY}],
-            ];
+            // DYNAMIC ROUTING PATHS
+            let routes = [];
+            if (!isMobile) {
+                routes = [
+                    [{x: node.x, y: node.y-12}, {x: node.x, y: obs.top-25}, {x: mouseX, y: obs.top-25}, {x: mouseX, y: mouseY}],
+                    [{x: node.x, y: node.y- 5}, {x: node.x, y: obs.top   }, {x: mouseX, y: obs.top   }, {x: mouseX, y: mouseY}],
+                    [{x: node.x, y: node.y+ 5}, {x: node.x, y: obs.bottom}, {x: mouseX, y: obs.bottom}, {x: mouseX, y: mouseY}],
+                    [{x: node.x, y: node.y+12}, {x: node.x, y: obs.bottom+25}, {x: mouseX, y: obs.bottom+25}, {x: mouseX, y: mouseY}],
+                ];
+            } else {
+                // MOBILE: Run lines purely up/down the outer edges, then shoot inward to thumb
+                routes = [
+                    [{x: node.x, y: node.y}, {x: node.x, y: 20}, {x: mouseX, y: 20}, {x: mouseX, y: mouseY}],
+                    [{x: node.x, y: node.y}, {x: node.x, y: H-20}, {x: mouseX, y: H-20}, {x: mouseX, y: mouseY}],
+                    [{x: node.x, y: node.y}, {x: node.x, y: obs.top}, {x: mouseX, y: obs.top}, {x: mouseX, y: mouseY}],
+                    [{x: node.x, y: node.y}, {x: node.x, y: obs.bottom}, {x: mouseX, y: obs.bottom}, {x: mouseX, y: mouseY}],
+                ];
+            }
 
             ctx.strokeStyle = 'rgba(' + gridColor + ', 0.15)';
             ctx.lineWidth   = 1;

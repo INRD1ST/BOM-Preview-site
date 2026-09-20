@@ -179,28 +179,35 @@
 
 @media (max-width: 920px)  { .module-grid { grid-template-columns: repeat(2, 1fr); } }
         
-        /* ═══ MOBILE OVERHAUL (SAFELY INJECTED) ══════════════════════════════════ */
+        /* ═══ MOBILE OVERHAUL (GUTTER STRATEGY) ══════════════════════════════════ */
         @media (max-width: 768px) {
+            body {
+                align-items: flex-start; /* Pushes the Hub to the top */
+                padding-top: 15px; /* Tight gap right below the dashboard bar */
+            }
             .module-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            /* The !important tags ensure your mobile sizes override the desktop sizes below */
-            .module-card { padding: 16px 12px !important; min-height: 140px !important; }
+            .module-card { padding: 16px 10px !important; min-height: 135px !important; }
             .card-num { font-size: 14px !important; margin-bottom: 4px !important; }
-            .card-title { font-size: 14px !important; letter-spacing: 1px !important; margin-bottom: 4px !important; }
+            .card-title { font-size: 12px !important; letter-spacing: 1px !important; margin-bottom: 4px !important; }
             .card-desc { font-size: 9px !important; line-height: 1.4 !important; }
             
-            .hub-wrapper { padding: 10px 15px; }
-            .hub-panel { padding: 25px 20px 20px; }
-            .hub-title { font-size: 18px; letter-spacing: 2px; }
-            .hub-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            /* Create the 25px side-gutters for the animation to flow through */
+            .hub-wrapper { padding: 0 25px; margin-bottom: 80px; }
+            .hub-panel { padding: 20px 15px; }
+            
+            .hub-title { font-size: 16px; letter-spacing: 1px; }
+            .hub-header { flex-direction: column; align-items: flex-start; gap: 10px; padding-bottom: 15px; margin-bottom: 15px; }
             .hub-meta { text-align: left; }
             
+            /* Bring theme button up to clear Safari/Chrome mobile nav bars */
             .theme-btn {
                 top: auto;
-                bottom: 15px;
+                bottom: 35px; 
                 right: 50%;
                 transform: translateX(50%);
                 background: var(--panel);
                 backdrop-filter: blur(10px);
+                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             }
             .hub-footer { display: none; }
         }
@@ -453,7 +460,7 @@
             return { top: r.top - pad, bottom: r.bottom + pad, left: r.left - pad, right: r.right + pad };
         }
 
-        function draw() {
+       function draw() {
             ctx.clearRect(0, 0, W, H);
 
             const isMobile = W <= 768;
@@ -470,9 +477,9 @@
                 node.targetY = mouseY > H / 2 ? 90 : H - 90;
                 node.y += (node.targetY - (node.y || H/2)) * 0.018;
                 node.time += 0.005;
-                node.x = W / 2 + Math.sin(node.time) * 60;
+                node.x = W / 2 + Math.sin(node.time) * 40;
                 node.w = 36;
-                node.h = 18;
+                node.h = 10;
             }
 
             const obs = getPanelBounds();
@@ -485,20 +492,21 @@
             ctx.fillRect(node.x - node.w/2, (node.y || H/2) - node.h/2, node.w, node.h);
             ctx.restore();
 
-            // DYNAMIC ROUTING PATHS
+            // DYNAMIC ROUTING PATHS (The Gutter Strategy)
             const routes = !isMobile ? [
                 [{x: node.x, y: node.y-12}, {x: node.x, y: obs.top-25}, {x: mouseX, y: obs.top-25}, {x: mouseX, y: mouseY}],
                 [{x: node.x, y: node.y- 5}, {x: node.x, y: obs.top   }, {x: mouseX, y: obs.top   }, {x: mouseX, y: mouseY}],
                 [{x: node.x, y: node.y+ 5}, {x: node.x, y: obs.bottom}, {x: mouseX, y: obs.bottom}, {x: mouseX, y: mouseY}],
                 [{x: node.x, y: node.y+12}, {x: node.x, y: obs.bottom+25}, {x: mouseX, y: obs.bottom+25}, {x: mouseX, y: mouseY}],
             ] : [
-                [{x: node.x-12, y: node.y}, {x: obs.left-25, y: node.y}, {x: obs.left-25, y: mouseY}, {x: mouseX, y: mouseY}],
-                [{x: node.x- 5, y: node.y}, {x: obs.left, y: node.y}, {x: obs.left, y: mouseY}, {x: mouseX, y: mouseY}],
-                [{x: node.x+ 5, y: node.y}, {x: obs.right, y: node.y}, {x: obs.right, y: mouseY}, {x: mouseX, y: mouseY}],
-                [{x: node.x+12, y: node.y}, {x: obs.right+25, y: node.y}, {x: obs.right+25, y: mouseY}, {x: mouseX, y: mouseY}],
+                // Force lines to run strictly down the far left (X=10, 18) and far right (W-10, W-18) edges
+                [{x: node.x, y: node.y}, {x: 10, y: node.y}, {x: 10, y: mouseY}, {x: mouseX, y: mouseY}],
+                [{x: node.x, y: node.y}, {x: 18, y: node.y}, {x: 18, y: mouseY}, {x: mouseX, y: mouseY}],
+                [{x: node.x, y: node.y}, {x: W - 18, y: node.y}, {x: W - 18, y: mouseY}, {x: mouseX, y: mouseY}],
+                [{x: node.x, y: node.y}, {x: W - 10, y: node.y}, {x: W - 10, y: mouseY}, {x: mouseX, y: mouseY}],
             ];
 
-            ctx.strokeStyle = 'rgba(' + gridColor + ', 0.10)';
+            ctx.strokeStyle = 'rgba(' + gridColor + ', 0.15)';
             ctx.lineWidth   = 1;
             routes.forEach(r => {
                 ctx.beginPath();
@@ -542,7 +550,6 @@
 
             requestAnimationFrame(draw);
         }
-        draw();
     </script>
 </body>
 </html>

@@ -13,7 +13,7 @@
             --text:        #ffffff;
             --muted:       #666666;
             --border:      #2a2a2a;
-            --panel:       rgba(8, 8, 10, 0.88);
+            --panel:       rgba(8, 8, 10, 0.65);
             --corner:      #ffffff;
             --btn-bg:      #ffffff;
             --btn-fg:      #000000;
@@ -26,7 +26,7 @@
             --text:       #000000;
             --muted:      #555555;
             --border:     #cccccc;
-            --panel:      rgba(255, 255, 255, 0.88);
+            --panel:      rgba(255, 255, 255, 0.65);
             --corner:     #000000;
             --btn-bg:     #000000;
             --btn-fg:     #ffffff;
@@ -177,8 +177,33 @@
             gap: 14px;
         }
 
-        @media (max-width: 920px)  { .module-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 480px)  { .module-grid { grid-template-columns: 1fr; } }
+@media (max-width: 920px)  { .module-grid { grid-template-columns: repeat(2, 1fr); } }
+        
+        /* ═══ MOBILE OVERHAUL (SAFELY INJECTED) ══════════════════════════════════ */
+        @media (max-width: 768px) {
+            .module-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            /* The !important tags ensure your mobile sizes override the desktop sizes below */
+            .module-card { padding: 16px 12px !important; min-height: 140px !important; }
+            .card-num { font-size: 14px !important; margin-bottom: 4px !important; }
+            .card-title { font-size: 14px !important; letter-spacing: 1px !important; margin-bottom: 4px !important; }
+            .card-desc { font-size: 9px !important; line-height: 1.4 !important; }
+            
+            .hub-wrapper { padding: 10px 15px; }
+            .hub-panel { padding: 25px 20px 20px; }
+            .hub-title { font-size: 18px; letter-spacing: 2px; }
+            .hub-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .hub-meta { text-align: left; }
+            
+            .theme-btn {
+                top: auto;
+                bottom: 15px;
+                right: 50%;
+                transform: translateX(50%);
+                background: var(--panel);
+                backdrop-filter: blur(10px);
+            }
+            .hub-footer { display: none; }
+        }
 
         /* ── MODULE CARD ──────────────────────────────────── */
         @keyframes cardIn {
@@ -249,30 +274,31 @@
         }
 
         .card-num {
-    font-size: 16px; /* Change to 16px */
-    font-weight: bold;
-    color: #666;
-    margin-bottom: 8px;
-    font-family: 'JetBrains Mono', monospace;
-    transition: color 0.3s;
-}
+            font-size: 16px; 
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            transition: color 0.3s;
+        }
 
-.card-title {
-    font-size: 18px; /* Change to 18px */
-    font-weight: bold;
-    letter-spacing: 2px; /* Add this line for the Brutalist spacing */
-    margin-bottom: 6px;
-    text-transform: uppercase;
-}
+        .card-title {
+            font-size: 18px; 
+            font-weight: bold;
+            letter-spacing: 2px; 
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
 
-.card-desc {
-    font-size: 12px; /* Change to 12px */
-    color: #888;
-    line-height: 1.6; /* Change to 1.6 */
-    font-family: 'JetBrains Mono', monospace;
-    text-transform: uppercase;
-    transition: color 0.3s;
-}
+        .card-desc {
+            font-size: 12px; 
+            color: #888;
+            line-height: 1.6; 
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+
         /* ── FOOTER ───────────────────────────────────────── */
         .hub-footer {
             display: flex;
@@ -287,7 +313,7 @@
             text-transform: uppercase;
             transition: color 0.4s, border-color 0.4s;
         }
-    </style>
+        </style> 
 </head>
 <body>
 

@@ -40,11 +40,20 @@
             color: var(--text);
             font-family: 'JetBrains Mono', monospace;
             height: 100vh;
+            height: 100dvh; /* ADD THIS: Mobile viewport fix */
+            width: 100vw;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background 0.5s ease, color 0.5s ease;
+            position: relative; 
+        }
+
+        /* ADD THIS: Tactile touch feedback when tapping cards on mobile */
+        .module-card:active, .theme-btn:active {
+            transform: scale(0.97) !important;
+            opacity: 0.9;
         }
 
         /* ── CANVAS (behind everything) ───────────────────── */

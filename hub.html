@@ -50,10 +50,15 @@
             position: relative; 
         }
 
-        /* ADD THIS: Tactile touch feedback when tapping cards on mobile */
-        .module-card:active, .theme-btn:active {
+       /* MODULE CARDS: Safe to scale */
+        .module-card:active {
             transform: scale(0.97) !important;
             opacity: 0.9;
+        }
+
+        /* THEME BUTTON: Opacity only, preventing the translateX override jump */
+        .theme-btn:active {
+            opacity: 0.5;
         }
 
         /* ── CANVAS (behind everything) ───────────────────── */

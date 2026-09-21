@@ -161,6 +161,34 @@
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); }
+
+        /* ═══ FNS TERMINAL MOBILE OVERHAUL ══════════════════════ */
+        @media (max-width: 768px) {
+            body { height: auto; overflow-y: auto; }
+            header { padding: 0 16px !important; height: 60px !important; }
+            header h1 { font-size: 14px !important; }
+            
+            /* Stack the main workspace vertically */
+            .flex.flex-1.p-8 { 
+                flex-direction: column !important; 
+                padding: 15px !important; 
+                gap: 16px !important; 
+                overflow-y: visible !important;
+                height: auto !important;
+            }
+            
+            /* Force the sidebar telemetry and terminal to full width */
+            .w-96 { width: 100% !important; shrink: 1 !important; }
+            
+            /* Make terminal box compact on mobile */
+            .terminal-box { height: 140px !important; }
+            
+            /* Make buttons full width for easy thumb tapping */
+            .btn-primary, .btn-secondary { width: 100% !important; justify-content: center; }
+            
+            /* Inputs padding adjustment */
+            .input-dark { font-size: 16px !important; /* Prevents iOS auto-zoom on focus */ }
+        }
     </style>
 
     <!-- ═══ BOM OVERMIND INTEGRATION ═══════════════════════════
@@ -221,17 +249,17 @@
 
     <div class="omni-bg"></div>
 
-    <header class="h-16 border-b border-[var(--border-color)] flex items-center justify-between px-8 shrink-0 glass-panel">
-        <div class="flex items-center gap-4">
-            <h1 class="text-lg font-black orbitron tracking-widest text-[var(--accent-main)]">BOM FNS</h1>
-            <div class="text-[10px] text-[var(--accent-muted)] border border-[var(--border-color)] px-2 py-0.5 font-bold">[ ENTERPRISE CORE ]</div>
+    <header class="h-16 border-b border-[var(--border-color)] flex items-center justify-between px-4 md:px-8 shrink-0 glass-panel">
+        <div class="flex items-center gap-2 md:gap-4">
+            <h1 class="text-sm md:text-lg font-black orbitron tracking-widest text-[var(--accent-main)]">BOM FNS</h1>
+            <div class="text-[9px] md:text-[10px] text-[var(--accent-muted)] border border-[var(--border-color)] px-1.5 md:px-2 py-0.5 font-bold">[ CORE ]</div>
         </div>
         
-        <div class="flex items-center gap-6">
-            <a href="mother-ai.html" class="btn-secondary">[ MOTHER AI ]</a>
-            <button id="themeToggle" onclick="toggleTheme()" class="btn-secondary">[ LIGHT MODE ]</button>
-            <div id="walletStatus" class="text-xs text-[var(--accent-muted)] font-bold">DISCONNECTED</div>
-            <button id="btnConnect" onclick="connectWallet()" class="btn-primary py-2">CONNECT WALLET</button>
+        <div class="flex items-center gap-3 md:gap-6">
+            <a href="mother-ai.html" class="btn-secondary hidden sm:inline-flex">[ MOTHER AI ]</a>
+            <button id="themeToggle" onclick="toggleTheme()" class="btn-secondary text-[9px] md:text-[10px] px-2 py-1">[ THEME ]</button>
+            <div id="walletStatus" class="text-[10px] md:text-xs text-[var(--accent-muted)] font-bold truncate max-w-[90px] md:max-w-none">DISCONNECTED</div>
+            <button id="btnConnect" onclick="connectWallet()" class="btn-primary py-1.5 px-3 text-[10px] md:text-[11px]">CONNECT</button>
         </div>
     </header>
 
@@ -247,10 +275,10 @@
                         <span class="text-[var(--accent-muted)]">[ 01 ]</span> MINT NAMESPACE
                     </h2>
                 </div>
-                <div class="grid grid-cols-2 gap-4 mb-4">
+               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="text-[10px] text-[var(--accent-muted)] font-bold uppercase mb-2 block">Target String (No Dots)</label>
-                        <input type="text" id="mintName" class="input-dark" placeholder="e.g. logistics" autocomplete="off">
+                        <input type="text" id="mintName" class="input-dark" placeholder="e.g. logistics" autocomplete="off" onkeydown="return event.key === 'Enter' || /^[a-zA-Z0-9.\-]$/.test(event.key) || event.ctrlKey || event.metaKey || event.key === 'Backspace' || event.key === 'Delete' || event.key.startsWith('Arrow')">
                     </div>
                     <div>
                         <label class="text-[10px] text-[var(--accent-muted)] font-bold uppercase mb-2 block">Spatial URI <span class="text-yellow-500 font-bold tracking-widest ml-1">(OPTIONAL)</span></label>
@@ -479,15 +507,30 @@
 
         async function executeMint() {
             if (!writeContract) return logTerminal("Connect wallet first.");
-            const name = document.getElementById('mintName').value.trim().toLowerCase();
+            const rawName = document.getElementById('mintName').value.trim().toLowerCase();
             const uri = document.getElementById('mintURI').value.trim();
             const btn = document.getElementById('btnMint');
 
-            if (!name) return logTerminal("Error: Target string required.");
-            if (/\s/.test(name)) {
-                logTerminal("> ERROR: Spaces are strictly forbidden in namespaces.");
+            if (!rawName) return logTerminal("Error: Target string required.");
+
+            // ═══ STRICT FNS ALPHANUMERIC & INTERIOR DOT VALIDATION ═══
+            // Only allow a-z, 0-9, hyphens, and dots. No spaces, no symbols like !@#$%^&*()
+            const fnsRegex = /^[a-z0-9]([a-z0-9\-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*$/;
+            
+            // Simpler check if dots are allowed anywhere except edges, or standard alphanumeric check:
+            // Let's enforce: a-z, 0-9, hyphens, and dots. Cannot start or end with a dot.
+            if (rawName.startsWith('.') || rawName.endsWith('.')) {
+                logTerminal("> ERROR: Namespace cannot start or end with a dot.");
                 return;
             }
+            
+            if (!/^[a-z0-9.\-]+$/.test(rawName)) {
+                logTerminal("> ERROR: Invalid characters. Only a-z, 0-9, hyphens, and dots are permitted.");
+                return;
+            }
+
+            const name = rawName;
+            
             btn.disabled = true; btn.innerText = "MINTING...";
             logTerminal(`Initiating Keccak-256 hash for '${name}'...`);
 

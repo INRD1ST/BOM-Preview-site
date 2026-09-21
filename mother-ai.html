@@ -56,6 +56,32 @@
         .sys-message { padding: 8px 14px; margin-bottom: 12px; color: var(--accent-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
         .blink { animation: blinker 1s linear infinite; }
         @keyframes blinker { 50% { opacity: 0.3; } }
+
+        /* ═══ MOTHER AI MOBILE OVERHAUL ═════════════════════════ */
+        @media (max-width: 768px) {
+            main { flex-direction: column !important; }
+            
+            /* Turn sidebar into a compact, scrollable telemetry top-bar */
+            aside { 
+                width: 100% !important; 
+                height: 175px !important; 
+                min-height: 175px !important;
+                border-right: none !important; 
+                border-bottom: 1px solid var(--border-dark) !important; 
+                padding: 12px !important;
+            }
+            
+            /* Tighten up telemetry spacing so more fits on screen */
+            .mb-6 { margin-bottom: 12px !important; }
+            .pt-4 { padding-top: 12px !important; }
+            
+            /* iOS Auto-Zoom Fix: Inputs must be 16px on mobile */
+            #chatInput { font-size: 16px !important; padding: 12px !important; }
+            #sendBtn { padding: 0 16px !important; font-size: 12px !important; }
+            
+            /* Optimize chat bubbles for narrow phone screens */
+            .ai-message, .user-message { width: 95%; padding: 10px; font-size: 13px; }
+        }
     </style>
 </head>
 <body class="font-mono h-screen flex flex-col overflow-hidden select-none">
@@ -135,18 +161,19 @@
     </main>
 
     <script>
-        // ═══ THEME ENGINE ══════════════════════════════════════
-        let isLight = localStorage.getItem('bom_theme') === 'light';
+       // ═══ INDEPENDENT THEME ENGINE (Resets on Reload) ═══════
+        let isLight = false;
         const themeBtn = document.getElementById('themeToggle');
-        if (isLight) { document.body.classList.add('light-mode'); if (themeBtn) themeBtn.innerText = "[ DARK MODE ]"; }
+        
+        // Force pure Dark Mode on boot
+        document.body.classList.remove('light-mode');
+        if (themeBtn) themeBtn.innerText = "[ LIGHT MODE ]";
         
         function toggleTheme() {
             isLight = !isLight;
             document.body.classList.toggle('light-mode');
-            const currentTheme = isLight ? 'light' : 'dark';
             themeBtn.innerText = isLight ? "[ DARK MODE ]" : "[ LIGHT MODE ]";
-            localStorage.setItem('bom_theme', currentTheme);
-            window.parent.postMessage({ type: 'SYNC_THEME', theme: currentTheme }, '*');
+            // No localStorage, no parent window sync. 100% isolated.
         }
 
         // ═══ CONSTANTS & RPC ═════════════════════════════════════

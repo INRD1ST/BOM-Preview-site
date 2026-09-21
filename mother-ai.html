@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOM OS // MOTHER AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.11.1/ethers.umd.min.js"></script>
+    <link rel="icon" type="image/png" href="icon.png">
+    <style>
+        /* ═══ BRUTALIST BASE ════════════════════════════════════ */
+        :root {
+            --bg-dark: #000000;
+            --text-dark: #ffffff;
+            --border-dark: #333333;
+            --accent-muted: #888888;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; }
+
+        /* ═══ LIGHT MODE OVERRIDES ══════════════════════════════ */
+        body.light-mode { background-color: #f0f2f5; color: #000000; }
+        body.light-mode .border-custom { border-color: #d1d5db !important; }
+        body.light-mode .bg-custom-panel { background-color: #ffffff !important; }
+        body.light-mode .text-muted { color: #6b7280 !important; }
+        body.light-mode .ai-message { border-color: #000000; }
+        body.light-mode .user-message { background-color: #000000; color: #ffffff; }
+        body.light-mode .sys-message { color: #000000; }
+        body.light-mode .hover-invert:hover { background-color: #000000 !important; color: #ffffff !important; }
+        body.light-mode .owner-text { color: #000000 !important; }
+        body.light-mode #statMinted,
+        body.light-mode #statRouted,
+        body.light-mode #statMirror {
+            color: #000000 !important;
+        }
+
+        /* ═══ CHAT BUBBLES ══════════════════════════════════════ */
+        .ai-message { border: 1px solid #333; padding: 14px; margin-bottom: 12px; width: 90%; white-space: pre-wrap; word-break: break-word; }
+        .user-message { background-color: #ffffff; color: #000000; padding: 14px; margin-bottom: 12px; width: 90%; margin-left: auto; white-space: pre-wrap; word-break: break-word; }
+        .sys-message { padding: 8px 14px; margin-bottom: 12px; color: var(--accent-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body class="font-mono h-screen flex flex-col overflow-hidden select-none">
+
+    <!-- HEADER (Fixed Height: 57px) -->
+    <header class="h-[57px] flex justify-between items-center px-4 border-b border-[#333] border-custom bg-[#0a0a0a] bg-custom-panel z-20 flex-shrink-0">
+        <div class="font-bold tracking-widest text-sm">[ MOTHER AI - NEURAL CORE ]</div>
+        <button id="themeToggle" onclick="toggleTheme()" class="text-[11px] uppercase font-bold border border-[#333] border-custom px-3 py-1.5 hover:bg-white hover:text-black hover-invert transition cursor-pointer">
+            [ LIGHT MODE ]
+        </button>
+    </header>
+
+    <!-- MAIN LOCKED VIEWPORT: FLEX ROW -->
+    <main class="flex-1 flex flex-row overflow-hidden min-h-0 w-full">
+        
+        <!-- LEFT PANEL: STRICTLY PINNED SIDEBAR -->
+        <aside class="w-72 sm:w-80 flex-shrink-0 border-r border-[#333] border-custom p-4 flex flex-col h-full overflow-y-auto bg-[#050505] bg-custom-panel select-text">
+            
+            <div class="mb-6">
+                <div class="text-xs text-muted mb-1">[ SYSTEM STATUS ]</div>
+                <div class="flex items-center gap-2 font-bold text-xs sm:text-sm" id="mainStatus">
+                    <span class="blink text-yellow-500">●</span> PROBING SWARM...
+                </div>
+            </div>
+
+            <!-- LIVE SWARM RADAR -->
+            <div class="border-t border-[#333] border-custom pt-4 mb-6">
+                <div class="text-xs text-muted mb-2 flex justify-between items-center">
+                    <span>[ SWARM NODES ]</span>
+                    <span class="text-[9px] blink text-green-500">LIVE</span>
+                </div>
+                <ul class="text-xs space-y-3">
+                    <li class="flex justify-between"><span>NODE-EU:</span> <span id="nodeAStatus" class="text-yellow-500">CHECKING</span></li>
+                    <li class="flex justify-between"><span>NODE-AS:</span> <span id="nodeBStatus" class="text-yellow-500">CHECKING</span></li>
+                </ul>
+            </div>
+
+            <!-- BOM NETWORK TELEMETRY (PURE ON-CHAIN + OVERMIND) -->
+            <div class="border-t border-[#333] border-custom pt-4 mb-6">
+                <div class="text-xs text-muted mb-2">[ NETWORK TELEMETRY ]</div>
+                <ul class="text-xs space-y-3 font-bold text-[#888]">
+                    <li class="flex justify-between"><span>MINTED NAMES:</span> <span id="statMinted" class="text-white">SYNCING...</span></li>
+                    <li class="flex justify-between"><span>ROUTED NAMES:</span> <span id="statRouted" class="text-white">SYNCING...</span></li>
+                    <li class="flex justify-between"><span>L3 MIRRORS:</span> <span id="statMirror" class="text-[#00e575]">SYNCING...</span></li>
+                </ul>
+            </div>
+
+            <div class="border-t border-[#333] border-custom pt-4 flex-1 flex flex-col justify-end">
+                <div class="text-xs text-muted mb-3">[ SOVEREIGN CONTROL ]</div>
+                <button id="walletBtn" onclick="connectWallet()" class="w-full border border-[#333] border-custom py-2 px-4 text-xs font-bold tracking-widest hover:bg-white hover:text-black hover-invert transition mb-2 cursor-pointer">
+                    [ CONNECT WALLET ]
+                </button>
+
+                <!-- OWNER PANEL (Hidden by Default) -->
+                <div id="ownerPanel" class="hidden bg-[#0a0a0a] bg-custom-panel border border-[#333] border-custom p-3 mt-2">
+                    <div class="text-[10px] text-[#00e575] font-bold mb-3 tracking-widest owner-text">&gt; CHIEF ARCHITECT</div>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="ownerCmd('show all names')" class="text-left text-[11px] text-muted hover:text-white hover-invert transition cursor-pointer">[ ALL NAMES ]</button>
+                        <button onclick="ownerCmd('swarm status')" class="text-left text-[11px] text-muted hover:text-white hover-invert transition cursor-pointer">[ SWARM STATUS ]</button>
+                        <button onclick="ownerCmd('how many names are registered?')" class="text-left text-[11px] text-muted hover:text-white hover-invert transition cursor-pointer">[ REGISTRY ]</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- RIGHT PANEL: INDEPENDENT CHAT VIEWPORT -->
+        <section class="flex-1 flex flex-col h-full min-w-0 min-h-0 bg-[#000000] bg-custom-panel relative select-text">
+            <div id="chatHistory" class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 flex flex-col"></div>
+
+            <div class="flex-shrink-0 border-t border-[#333] border-custom p-3 sm:p-4 bg-[#0a0a0a] bg-custom-panel flex gap-2">
+                <input type="text" id="chatInput" class="flex-1 bg-transparent border border-[#333] border-custom outline-none p-3 text-sm focus:border-white transition disabled:opacity-50 disabled:cursor-not-allowed" placeholder="[ CONNECT WALLET TO UNLOCK NEURAL LINK ]" disabled>
+                <button id="sendBtn" onclick="sendMessage()" class="border border-[#333] border-custom px-4 sm:px-6 font-bold tracking-widest hover:bg-white hover:text-black hover-invert transition disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm cursor-pointer" disabled>
+                    EXECUTE
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ═══ THEME ENGINE ══════════════════════════════════════
+        let isLight = localStorage.getItem('bom_theme') === 'light';
+        const themeBtn = document.getElementById('themeToggle');
+        if (isLight) { document.body.classList.add('light-mode'); if (themeBtn) themeBtn.innerText = "[ DARK MODE ]"; }
+        
+        function toggleTheme() {
+            isLight = !isLight;
+            document.body.classList.toggle('light-mode');
+            const currentTheme = isLight ? 'light' : 'dark';
+            themeBtn.innerText = isLight ? "[ DARK MODE ]" : "[ LIGHT MODE ]";
+            localStorage.setItem('bom_theme', currentTheme);
+            window.parent.postMessage({ type: 'SYNC_THEME', theme: currentTheme }, '*');
+        }
+
+        // ═══ CONSTANTS & RPC ═════════════════════════════════════
+        const RPC_URL = 'https://ethereum-sepolia-rpc.publicnode.com';
+        
+        // FNS Contract
+        const CONTRACT_ADDRESS = '0x9Dd6f41235a3f6D2dcF9a73B5177c14e721432Ff';
+        const CONTRACT_ABI = [
+            'function resolveFNS(string targetString) view returns (address owner, string spatialURI)',
+            'function owner() view returns (address)'
+        ];
+
+        // L3 Factory Contract (Pure On-Chain Source of Truth)
+        const L3_CONTRACT_ADDRESS = '0x78401eb11A1d9c5a290374399309615C640B4955';
+        const L3_ABI = [
+            'function getAllChains() public view returns (bytes32[] memory)'
+        ];
+
+        const SWARM_NODES = [
+            { url: 'https://web-production-d64b0.up.railway.app', statusId: 'nodeAStatus', label: 'NODE-EU' },
+            { url: 'https://bom-overmind-backend.onrender.com', statusId: 'nodeBStatus', label: 'NODE-AS' }
+        ];
+
+        let activeNode = null;
+        let connectedWallet = null;
+        let isOwner = false;
+        let isTyping = false;
+        let chatMemory = [];
+
+        const chatHistory = document.getElementById('chatHistory');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const walletBtn = document.getElementById('walletBtn');
+        const mainStatus = document.getElementById('mainStatus');
+
+        // ═══ UI & RENDER LOGIC ═════════════════════════════════
+        function renderMsg(text, sender, time = null, id = null) {
+            const div = document.createElement('div');
+            if (id) div.id = id;
+            
+            const timestamp = time ? time : new Date().toLocaleTimeString();
+
+            if (sender === 'user') {
+                div.className = 'user-message';
+                div.innerHTML = text;
+            } else if (sender === 'ai') {
+                div.className = 'ai-message';
+                div.innerHTML = `<span class="text-[10px] text-muted block mb-2 tracking-widest">MOTHER AI // ${timestamp}</span>${text}`;
+            } else if (sender === 'sys') {
+                div.className = 'sys-message border-b border-[#333] border-custom pb-2';
+                div.innerHTML = text;
+            }
+            
+            chatHistory.appendChild(div);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function addMsgAndSave(text, sender, id = null) {
+            const time = new Date().toLocaleTimeString();
+            renderMsg(text, sender, time, id);
+            
+            if (connectedWallet && sender !== 'sys' && id === null) {
+                chatMemory.push({ text, sender, time });
+                localStorage.setItem(`bom_chat_${connectedWallet}`, JSON.stringify(chatMemory));
+            }
+        }
+
+        function saveAiReply(text) {
+            if (connectedWallet) {
+                chatMemory.push({ text, sender: 'ai', time: new Date().toLocaleTimeString() });
+                localStorage.setItem(`bom_chat_${connectedWallet}`, JSON.stringify(chatMemory));
+            }
+        }
+
+        // ═══ LIVE SWARM RADAR & PURE ON-CHAIN TELEMETRY ════════
+        async function probeNode(node) {
+            const statusEl = document.getElementById(node.statusId);
+            try {
+                const start = Date.now();
+                const r = await fetch(node.url + '/api/health', { signal: AbortSignal.timeout(5000) });
+                const ms = Date.now() - start;
+                if (r.ok) {
+                    const data = await r.json();
+                    statusEl.textContent = `ONLINE [${ms}ms]`;
+                    statusEl.className = "text-green-500";
+                    return { ...node, latency: ms, data: data };
+                }
+            } catch (e) {}
+            statusEl.textContent = "OFFLINE";
+            statusEl.className = "text-red-500";
+            return null;
+        }
+
+        async function liveSwarmRadar() {
+            const results = await Promise.all(SWARM_NODES.map(probeNode));
+            const online = results.filter(Boolean).sort((a, b) => a.latency - b.latency);
+            
+            if (online.length > 0) {
+                activeNode = online[0];
+                mainStatus.innerHTML = `<span class="text-green-500">●</span> ROUTED: ${activeNode.label}`;
+                
+                // 1. Telemetry from Overmind Swarm (All block-indexed names from Genesis)
+                const minted = activeNode.data?.totalMinted ?? activeNode.data?.indexedNames ?? 0;
+                const routed = activeNode.data?.totalRouted ?? 0;
+                
+                document.getElementById('statMinted').textContent = minted;
+                document.getElementById('statRouted').textContent = routed;
+
+                // 2. Pure On-Chain L3 Telemetry directly from Sepolia Smart Contract
+                try {
+                    const rpcProvider = new ethers.JsonRpcProvider(RPC_URL);
+                    const l3Contract = new ethers.Contract(L3_CONTRACT_ADDRESS, L3_ABI, rpcProvider);
+                    const chains = await l3Contract.getAllChains();
+                    const mirrorEl = document.getElementById('statMirror');
+                    if (mirrorEl) {
+                        mirrorEl.textContent = `${chains.length} (ACTIVE L3)`;
+                        mirrorEl.className = "text-[#00e575]";
+                    }
+                } catch (e) {
+                    console.warn("Could not fetch on-chain L3 count from Sepolia:", e);
+                }
+            } else {
+                activeNode = null;
+                mainStatus.innerHTML = `<span class="text-red-500">●</span> SWARM OFFLINE`;
+                document.getElementById('statMinted').textContent = "OFFLINE";
+                document.getElementById('statRouted').textContent = "OFFLINE";
+                document.getElementById('statMirror').textContent = "OFFLINE";
+            }
+        }
+
+        // Start Live Radar (Pings every 10 seconds)
+        liveSwarmRadar();
+        setInterval(liveSwarmRadar, 10000); 
+        
+        // ═══ WALLET LOGIC ═════════════════════════════════════
+        renderMsg("AWAITING SOVEREIGN IDENTITY. PLEASE CONNECT WALLET TO DECRYPT NEURAL LINK.", 'sys');
+
+        window.addEventListener('load', async () => {
+            if (window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        await processLogin(accounts[0]);
+                    }
+                } catch (e) { console.warn("Silent connect failed", e); }
+            }
+        });
+
+        async function connectWallet() {
+            if (!window.ethereum) { walletBtn.textContent = '[ NO WALLET ]'; return; }
+            try {
+                walletBtn.textContent = '[ CONNECTING... ]';
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                await processLogin(accounts[0]);
+            } catch (err) {
+                walletBtn.textContent = '[ CONNECT WALLET ]';
+            }
+        }
+
+        async function processLogin(address) {
+            localStorage.setItem('bom_active_wallet', address);
+            connectedWallet = address.toLowerCase();
+            const short = connectedWallet.slice(0, 6) + '...' + connectedWallet.slice(-4);
+
+            const MASTER_WALLETS = [
+                "0xDC8727aE98692AA24375336a782b99E5580b7a49".toLowerCase()
+            ];
+
+            try {
+                const provider = new ethers.JsonRpcProvider(RPC_URL);
+                const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                const ownerAddr = await contract.owner();
+                isOwner = (ownerAddr.toLowerCase() === connectedWallet) || MASTER_WALLETS.includes(connectedWallet);
+            } catch (e) {
+                console.warn("Contract owner check failed, falling back to master list:", e);
+                isOwner = MASTER_WALLETS.includes(connectedWallet);
+            }
+
+            if (isOwner) {
+                walletBtn.textContent = `[ AUTH: CHIEF ARCHITECT ]`;
+                walletBtn.classList.add('text-[#00e575]', 'border-[#00e575]');
+                document.getElementById('ownerPanel').classList.remove('hidden');
+            } else {
+                walletBtn.textContent = `[ AUTH: ${short.toUpperCase()} ]`;
+            }
+
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            chatInput.placeholder = "ENTER DIRECTIVE...";
+            
+            chatHistory.innerHTML = "";
+            const savedHistory = localStorage.getItem(`bom_chat_${connectedWallet}`);
+            
+            if (savedHistory) {
+                chatMemory = JSON.parse(savedHistory);
+                renderMsg(`NEURAL LINK RESTORED. WELCOME BACK, ${isOwner ? 'CHIEF ARCHITECT' : short.toUpperCase()}.`, 'sys');
+                chatMemory.forEach(msg => renderMsg(msg.text, msg.sender, msg.time));
+            } else {
+                renderMsg(`NEURAL LINK ESTABLISHED. WALLET AUTHENTICATED: ${short.toUpperCase()}`, 'sys');
+                addMsgAndSave("Mother AI Online. I am ready to assist you.", 'ai');
+            }
+        }
+
+        // ═══ CHAT LOGIC ════════════════════════════════════════
+        function ownerCmd(msg) { chatInput.value = msg; sendMessage(); }
+        chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+
+        async function sendMessage() {
+            const raw = chatInput.value.trim();
+            if (!raw || isTyping) return;
+
+            chatInput.value = '';
+            chatInput.disabled = true;
+            sendBtn.disabled = true;
+            isTyping = true;
+
+            addMsgAndSave(raw, 'user');
+            
+            const thinkingId = 'msg-' + Date.now();
+            renderMsg('[ PROCESSING... ]', 'ai', null, thinkingId);
+
+            if (!activeNode && SWARM_NODES.length === 0) {
+                document.getElementById(thinkingId).innerHTML = `<span class="text-red-500">[ CRITICAL ERROR: ALL NODES OFFLINE ]</span>`;
+                finishTyping();
+                return;
+            }
+
+            const primaryNode = activeNode || SWARM_NODES[0];
+            const fallbackNode = SWARM_NODES.find(n => n.url !== primaryNode.url);
+            const payload = { message: raw, wallet: connectedWallet };
+
+            try {
+                const r = await fetch(primaryNode.url + '/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: AbortSignal.timeout(20000),
+                });
+
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const data = await r.json();
+                
+                document.getElementById(thinkingId).innerHTML = `<span class="text-[10px] text-muted block mb-2 tracking-widest">MOTHER AI // ${new Date().toLocaleTimeString()}</span>${data.reply}`;
+                saveAiReply(data.reply);
+
+            } catch (err) {
+                console.warn(`[SWARM] Primary node (${primaryNode.label}) failed. Engaging fallback...`);
+                
+                if (fallbackNode) {
+                    try {
+                        const r2 = await fetch(fallbackNode.url + '/api/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload),
+                            signal: AbortSignal.timeout(20000),
+                        });
+
+                        if (!r2.ok) throw new Error('HTTP ' + r2.status);
+                        const data2 = await r2.json();
+                        
+                        document.getElementById(thinkingId).innerHTML = `<span class="text-[10px] text-muted block mb-2 tracking-widest">MOTHER AI // ${new Date().toLocaleTimeString()}</span>${data2.reply}`;
+                        saveAiReply(data2.reply);
+                    } catch (fallbackErr) {
+                         document.getElementById(thinkingId).innerHTML = `<span class="text-red-500">[ CRITICAL ERROR: ALL SWARM NODES OFFLINE ]</span>`;
+                    }
+                } else {
+                    document.getElementById(thinkingId).innerHTML = `<span class="text-red-500">[ NEURAL LINK FAILED: ${err.message} ]</span>`;
+                }
+            }
+
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+            finishTyping();
+        }
+
+        function finishTyping() {
+            isTyping = false;
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            chatInput.focus();
+        }
+    </script>
+</body>
+</html>

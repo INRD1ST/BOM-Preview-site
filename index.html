@@ -179,10 +179,10 @@
                 align-items: center; text-align: center; font-size: 9px; 
             }
           .container { 
-                padding: 30px 15px; 
-                margin: 0 auto; /* Absolute center for mobile */
-                width: 92%; /* Symmetrical 4% gap on left and right */
-                box-sizing: border-box; /* Stops padding from breaking symmetry */
+                margin: 90px auto 20px auto !important; /* 90px pushes it down away from the button */
+                width: 90% !important; /* Forces a perfect 5% gap on both the left and right */
+                box-sizing: border-box !important; /* Stops padding from breaking the centering */
+                position: relative !important;
             }
             .terminal-text { font-size: 9px; margin-bottom: 25px; }
             .theme-toggle { top: 40px; right: 10px; font-size: 9px; padding: 6px 10px; }

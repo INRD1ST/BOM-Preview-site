@@ -41,7 +41,7 @@
             --text-main: #ffffff;
             --text-muted: #888888;
             --border-color: #333333;
-            --panel-bg: rgba(10, 10, 12, 0.8);
+            --panel-bg: rgba(10, 10, 12, 0.4);
             --corner-color: #ffffff;
             --btn-bg: #ffffff;
             --btn-text: #000000;
@@ -52,7 +52,7 @@
             --text-main: #000000;
             --text-muted: #666666;
             --border-color: #cccccc;
-            --panel-bg: rgba(255, 255, 255, 0.85);
+            --panel-bg: rgba(255, 255, 255, 0.45);
             --corner-color: #000000;
             --btn-bg: #000000;
             --btn-text: #ffffff;
@@ -80,13 +80,19 @@
         }
         body.light-mode .radial-glow { background: radial-gradient(circle, rgba(0,0,0,0.02) 0%, transparent 60%); }
 
-        .container { 
-            text-align: center; max-width: 850px; padding: 60px 50px; 
-            background: var(--panel-bg); border: 1px solid var(--border-color); 
+       .container { 
+            text-align: center; 
+            width: 90%; 
+            max-width: 850px; 
+            padding: 60px 50px; 
+            background: var(--panel-bg); 
+            border: 1px solid var(--border-color); 
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            z-index: 10; margin: 20px; 
+            z-index: 10; 
+            margin: 0 auto; /* This replaces margin: 20px to force perfect centering */
             position: relative;
             transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            box-sizing: border-box; /* This stops padding from breaking the width */
         }
 
         .corner { position: absolute; width: 15px; height: 15px; border: 2px solid transparent; transition: border-color 0.5s; }

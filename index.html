@@ -303,25 +303,12 @@
     </div>
 
     <script>
-        <script>
-        // ── ISOLATED THEME ENGINE (PERSISTS ON RELOAD) ────────
-        let isLight = localStorage.getItem('index_theme') === 'light';
-        let gridColor = isLight ? '0, 0, 0' : '255, 255, 255';
-
-        // Apply saved theme immediately on boot
-        if (isLight) {
-            document.body.classList.add('light-mode');
-            document.getElementById('theme-toggle').innerText = "[ DARK_MODE ]";
-        }
-
+        let isLight = false;
         function toggleTheme() {
             isLight = !isLight;
             document.body.classList.toggle('light-mode');
             document.getElementById('theme-toggle').innerText = isLight ? "[ DARK_MODE ]" : "[ LIGHT_MODE ]";
             gridColor = isLight ? '0, 0, 0' : '255, 255, 255';
-            
-            // Save state to browser memory specifically for this page
-            localStorage.setItem('index_theme', isLight ? 'light' : 'dark');
         }
 
         const phrases = [
@@ -360,6 +347,7 @@
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let width, height;
+        let gridColor = '255, 255, 255';
         
         let mouseX = window.innerWidth / 2;
         let mouseY = window.innerHeight / 2;

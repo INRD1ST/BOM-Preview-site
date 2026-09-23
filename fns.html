@@ -164,30 +164,38 @@
 
         /* ═══ FNS TERMINAL MOBILE OVERHAUL ══════════════════════ */
         @media (max-width: 768px) {
-            body { height: auto; overflow-y: auto; }
-            header { padding: 0 16px !important; height: 60px !important; }
-            header h1 { font-size: 14px !important; }
+            /* Unlock native scrolling so the iframe doesn't clip content */
+            html, body { 
+                height: 100% !important; 
+                overflow-y: auto !important; 
+                overflow-x: hidden !important; 
+                -webkit-overflow-scrolling: touch; 
+            }
             
-            /* Stack the main workspace vertically */
-            .flex.flex-1.p-8 { 
+            /* Transform workspace into a vertically scrolling stack */
+            #workspace { 
                 flex-direction: column !important; 
                 padding: 15px !important; 
-                gap: 16px !important; 
-                overflow-y: visible !important;
+                padding-bottom: 100px !important; /* Huge bottom clearance so nothing gets cut off */
+                gap: 20px !important; 
+                overflow: visible !important;
                 height: auto !important;
             }
             
+            /* Remove scroll locks from the left column */
+            .flex-1.flex.flex-col.gap-6.overflow-y-auto.pr-2 {
+                overflow: visible !important;
+                padding-right: 0 !important;
+            }
+
             /* Force the sidebar telemetry and terminal to full width */
-            .w-96 { width: 100% !important; shrink: 1 !important; }
-            
-            /* Make terminal box compact on mobile */
-            .terminal-box { height: 140px !important; }
+            .w-96 { width: 100% !important; flex-shrink: 1 !important; }
             
             /* Make buttons full width for easy thumb tapping */
-            .btn-primary, .btn-secondary { width: 100% !important; justify-content: center; }
+            #btnMint, #btnResolve, #btnUpdate { width: 100% !important; justify-content: center; }
             
-            /* Inputs padding adjustment */
-            .input-dark { font-size: 16px !important; /* Prevents iOS auto-zoom on focus */ }
+            /* Inputs padding adjustment - 16px stops iPhones from auto-zooming! */
+            .input-dark { font-size: 16px !important; }
         }
     </style>
 
@@ -249,21 +257,30 @@
 
     <div class="omni-bg"></div>
 
-    <header class="h-16 border-b border-[var(--border-color)] flex items-center justify-between px-4 md:px-8 shrink-0 glass-panel">
-        <div class="flex items-center gap-2 md:gap-4">
+    <header class="border-b border-[var(--border-color)] shrink-0 glass-panel grid grid-cols-2 md:flex md:items-center md:justify-between p-3 md:px-8 md:h-16 gap-y-3 gap-x-2 z-10 relative">
+        
+        <!-- Row 1 Left (Mobile) / Far Left (Desktop) -->
+        <div class="flex items-center gap-2 md:gap-4 col-span-1 justify-start">
             <h1 class="text-sm md:text-lg font-black orbitron tracking-widest text-[var(--accent-main)]">BOM FNS</h1>
             <div class="text-[9px] md:text-[10px] text-[var(--accent-muted)] border border-[var(--border-color)] px-1.5 md:px-2 py-0.5 font-bold">[ CORE ]</div>
         </div>
         
-        <div class="flex items-center gap-3 md:gap-6">
-            <a href="mother-ai.html" class="btn-secondary hidden sm:inline-flex">[ MOTHER AI ]</a>
-            <button id="themeToggle" onclick="toggleTheme()" class="btn-secondary text-[9px] md:text-[10px] px-2 py-1">[ THEME ]</button>
-            <div id="walletStatus" class="text-[10px] md:text-xs text-[var(--accent-muted)] font-bold truncate max-w-[90px] md:max-w-none">DISCONNECTED</div>
-            <button id="btnConnect" onclick="connectWallet()" class="btn-primary py-1.5 px-3 text-[10px] md:text-[11px]">CONNECT</button>
+        <!-- Row 1 Right (Mobile) / Far Right (Desktop) -->
+        <div class="flex items-center justify-end gap-2 md:gap-3 col-span-1 md:order-last">
+            <div id="walletStatus" class="text-[9px] md:text-xs text-[var(--accent-muted)] font-bold truncate max-w-[80px] md:max-w-none">DISCONNECTED</div>
+            <button id="btnConnect" onclick="connectWallet()" class="btn-primary py-1 px-2 md:py-1.5 md:px-3 text-[9px] md:text-[11px]">CONNECT</button>
         </div>
+
+        <!-- Row 2 Left (Mobile) / Middle (Desktop) -->
+        <div class="flex items-center justify-start md:justify-end gap-3 md:gap-6 col-span-2 md:col-span-1">
+            <!-- Removed 'hidden sm:inline-flex' so it always shows -->
+            <a href="mother-ai.html" class="btn-secondary text-[9px] md:text-[10px] px-2 py-1 inline-flex">[ MOTHER AI ]</a>
+            <button id="themeToggle" onclick="toggleTheme()" class="btn-secondary text-[9px] md:text-[10px] px-2 py-1 inline-flex">[ THEME ]</button>
+        </div>
+        
     </header>
 
-    <div class="flex flex-1 p-8 gap-8 max-w-7xl mx-auto w-full overflow-hidden">
+    <div id="workspace" class="flex flex-1 p-8 gap-8 max-w-7xl mx-auto w-full overflow-hidden">
         
         <!-- LEFT: Operations Panel -->
         <div class="flex-1 flex flex-col gap-6 overflow-y-auto pr-2">

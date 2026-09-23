@@ -303,13 +303,12 @@
     </div>
 
     <script>
-        let isLight = false;
-        let gridColor = '255, 255, 255'; // Declared once here at the top
+               let isLight = false;
+        let gridColor = '255, 255, 255';
 
         // 1. Check saved theme immediately on load
         function loadSavedTheme() {
-            // Changed to 'index_theme' so it never conflicts with the Hub or Dashboard
-            const savedTheme = localStorage.getItem('index_theme'); 
+            const savedTheme = localStorage.getItem('bomTheme');
             if (savedTheme === 'light') {
                 isLight = true;
                 document.body.classList.add('light-mode');
@@ -331,8 +330,8 @@
             document.getElementById('theme-toggle').innerText = isLight ? "[ DARK_MODE ]" : "[ LIGHT_MODE ]";
             gridColor = isLight ? '0, 0, 0' : '255, 255, 255';
             
-            // Save choice to this page's isolated memory
-            localStorage.setItem('index_theme', isLight ? 'light' : 'dark');
+            // Save choice to localStorage
+            localStorage.setItem('bomTheme', isLight ? 'light' : 'dark');
         }
 
         const phrases = [

@@ -63,7 +63,7 @@
             font-family: 'JetBrains Mono', monospace; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             height: 100vh; height: 100dvh; 
-            width: 100vw; overflow: hidden; 
+            width: 100%; overflow: hidden; 
             transition: background-color 0.5s, color 0.5s;
             box-sizing: border-box;
         }
@@ -84,17 +84,17 @@
 
        .container { 
             text-align: center; 
-            width: calc(100% - 40px); /* Mathematically forces a 20px gap on each side */
+            width: 90%; 
             max-width: 850px; 
             padding: 60px 50px; 
             background: var(--panel-bg); 
             border: 1px solid var(--border-color); 
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             z-index: 10; 
-            margin: 0 auto; /* Absolute center */
+            margin: 40px auto 0 auto; /* Pushes the panel 40px lower, away from the toggle button */
             position: relative;
             transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-            box-sizing: border-box; /* Stops padding from breaking the width */
+            box-sizing: border-box; 
         }
 
         .corner { position: absolute; width: 15px; height: 15px; border: 2px solid transparent; transition: border-color 0.5s; }
@@ -176,8 +176,8 @@
 
         @media (max-width: 768px) {
             body {
-                justify-content: flex-start !important; /* Aligns to top for mobile */
-                padding-top: 80px !important; /* Clears the banner safely */
+                justify-content: flex-start !important; 
+                padding-top: 110px !important; /* Pushes it lower so it doesn't collide with the toggle button */
             }
             .omni-title { font-size: 30px; letter-spacing: 0.05em; margin-bottom: 10px; }
             .subtitle { font-size: 10px; line-height: 1.5; margin-bottom: 25px; padding: 0 10px; }
@@ -191,11 +191,10 @@
             text-align: center; 
             font-size: 9px; 
         }
-            .container { 
+           .container { 
                 padding: 30px 15px; 
-                margin: 0 auto; /* Absolute center */
-                width: calc(100% - 30px); /* Mathematically forces a 15px gap on each side */
-                margin-top: 20px;
+                margin: 0 auto; 
+                width: 92%; /* Forces exactly a 4% gap symmetrically on both left and right */
                 box-sizing: border-box; 
             }
             .terminal-text { font-size: 9px; margin-bottom: 25px; }

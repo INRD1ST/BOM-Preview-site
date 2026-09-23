@@ -303,12 +303,13 @@
     </div>
 
     <script>
-               let isLight = false;
-        let gridColor = '255, 255, 255';
+let isLight = false;
+        let gridColor = '255, 255, 255'; // Declared once here at the top
 
         // 1. Check saved theme immediately on load
         function loadSavedTheme() {
-            const savedTheme = localStorage.getItem('bomTheme');
+            // Changed to 'index_theme' so it never conflicts with the Hub or Dashboard
+            const savedTheme = localStorage.getItem('index_theme'); 
             if (savedTheme === 'light') {
                 isLight = true;
                 document.body.classList.add('light-mode');
@@ -330,8 +331,8 @@
             document.getElementById('theme-toggle').innerText = isLight ? "[ DARK_MODE ]" : "[ LIGHT_MODE ]";
             gridColor = isLight ? '0, 0, 0' : '255, 255, 255';
             
-            // Save choice to localStorage
-            localStorage.setItem('bomTheme', isLight ? 'light' : 'dark');
+            // Save choice to this page's isolated memory
+            localStorage.setItem('index_theme', isLight ? 'light' : 'dark');
         }
 
         const phrases = [
@@ -370,7 +371,7 @@
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let width, height;
-        let gridColor = '255, 255, 255';
+        
         
         let mouseX = window.innerWidth / 2;
         let mouseY = window.innerHeight / 2;

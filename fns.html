@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- 🔥 CRITICAL FIX: maximum-scale=1.0 prevents iOS from zooming in on our new smaller input fonts! -->
+    <!-- 🔥 Viewport lock prevents iOS zoom on small mobile text -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BOM OS - FNS Terminal</title>
     <link rel="icon" type="image/png" href="icon.png">
@@ -75,17 +75,17 @@
             transition: background 0.5s, border-color 0.5s;
         }
 
-        /* ═══ REDUCED INPUT STYLES ═══ */
+        /* ═══ ORIGINAL DESKTOP SIZES RESTORED ═══ */
         .input-dark {
             background: var(--bg-dark);
             border: 1px solid var(--border-color);
             color: var(--accent-main);
             border-radius: 0px;
-            padding: 10px 12px; /* Slimmer height */
+            padding: 12px; /* Desktop Padding */
             width: 100%;
             transition: 0.3s;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11px; /* Smaller typed text */
+            font-size: 13px; /* Desktop Font Size */
         }
         .input-dark:focus {
             outline: none;
@@ -95,21 +95,19 @@
         body.light-mode .input-dark:focus {
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
-        /* Smaller, uppercase placeholders to match the aesthetic */
         .input-dark::placeholder {
-            font-size: 10px;
+            font-size: 11px; /* Desktop Placeholder */
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--accent-muted);
             opacity: 0.7;
         }
 
-        /* ═══ REDUCED BUTTON STYLES ═══ */
         .btn-primary {
             background: var(--accent-main);
             color: var(--bg-dark);
             font-weight: 800;
-            padding: 10px 16px; /* Slimmer padding */
+            padding: 12px 24px; /* Desktop Padding */
             border-radius: 0px;
             transition: 0.3s;
             cursor: pointer;
@@ -117,7 +115,7 @@
             letter-spacing: 1px;
             border: 1px solid var(--accent-main);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10px; /* Smaller text */
+            font-size: 11px; /* Desktop Font Size */
             text-transform: uppercase;
         }
         .btn-primary:hover {
@@ -208,7 +206,10 @@
             
             #btnMint, #btnUpdate { width: 100% !important; justify-content: center; }
             
-            /* Removed the 16px input override because the viewport lock fixes the iOS zoom bug! */
+            /* 🔥 MOBILE-ONLY COMPRESSION (Leaves Desktop Huge) */
+            .input-dark { padding: 10px 12px !important; font-size: 12px !important; }
+            .input-dark::placeholder { font-size: 10px !important; }
+            .btn-primary { padding: 10px 16px !important; font-size: 10px !important; }
         }
     </style>
 
@@ -339,7 +340,6 @@
                         <label class="text-[10px] text-[var(--accent-main)] font-bold uppercase mb-2 block">Update Spatial Routing</label>
                         <div class="flex gap-2">
                             <input type="text" id="updateURI" class="input-dark flex-1 min-w-0" placeholder="New URI...">
-                            <!-- Stripped Tailwind padding overrides to force CSS sizing -->
                             <button onclick="executeUpdate()" class="btn-primary shrink-0" id="btnUpdate">UPDATE</button>
                         </div>
                     </div>

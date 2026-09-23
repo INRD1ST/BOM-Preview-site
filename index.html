@@ -83,7 +83,7 @@
             text-align: center; max-width: 850px; padding: 60px 50px; 
             background: var(--panel-bg); border: 1px solid var(--border-color); 
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            z-index: 10; margin: 20px; /* Restored your original margin */
+            z-index: 10; margin: 20px; 
             position: relative;
             transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
@@ -167,10 +167,13 @@
 
         @media (max-width: 768px) {
             body {
-                align-items: flex-start !important;
-                padding-top: 110px !important; /* Pushes it lower, away from the theme toggle */
+                flex-direction: column !important; /* Stacks layout perfectly on mobile */
+                align-items: center !important; /* Absolute horizontal center */
+                justify-content: flex-start !important; /* Starts drawing from the top */
+                padding-top: 100px !important; /* Clears the theme toggle securely */
+                width: 100% !important; /* Prevents overflow pushing left */
             }
-           .omni-title { font-size: 30px; letter-spacing: 0.05em; margin-bottom: 10px; }
+            .omni-title { font-size: 30px; letter-spacing: 0.05em; margin-bottom: 10px; }
             .subtitle { font-size: 10px; line-height: 1.5; margin-bottom: 25px; padding: 0 10px; }
             .btn-group { display: flex; flex-direction: column; gap: 12px; width: 100%; }
             .btn { padding: 14px; font-size: 11px; width: 100%; box-sizing: border-box; text-align: center; }
@@ -178,15 +181,17 @@
                 display: grid; grid-template-columns: 1fr 1fr; gap: 15px 5px; 
                 align-items: center; text-align: center; font-size: 9px; 
             }
-          .container { 
-                margin: 90px auto 20px auto !important; /* 90px pushes it down away from the button */
-                width: 90% !important; /* Forces a perfect 5% gap on both the left and right */
-                box-sizing: border-box !important; /* Stops padding from breaking the centering */
+            .container { 
+                margin: 0 !important; /* Strips flexbox interference */
+                padding: 30px 15px; 
+                width: 90% !important; /* Locks exactly a 5% gap symmetrically */
+                box-sizing: border-box !important; 
                 position: relative !important;
             }
             .terminal-text { font-size: 9px; margin-bottom: 25px; }
             .theme-toggle { top: 40px; right: 10px; font-size: 9px; padding: 6px 10px; }
             .top-banner { font-size: 8px; padding: 8px; letter-spacing: 1px; }
+        }
 
         @keyframes glitch {
             0% { transform: translate(0) }
@@ -302,12 +307,11 @@
     </div>
 
     <script>
-let isLight = false;
-        let gridColor = '255, 255, 255'; // Declared once here at the top
+        let isLight = false;
+        let gridColor = '255, 255, 255'; 
 
         // 1. Check saved theme immediately on load
         function loadSavedTheme() {
-            // Changed to 'index_theme' so it never conflicts with the Hub or Dashboard
             const savedTheme = localStorage.getItem('index_theme'); 
             if (savedTheme === 'light') {
                 isLight = true;
@@ -315,12 +319,10 @@ let isLight = false;
                 document.getElementById('theme-toggle').innerText = "[ DARK_MODE ]";
                 gridColor = '0, 0, 0';
             } else {
-                // Default is dark mode
                 document.getElementById('theme-toggle').innerText = "[ LIGHT_MODE ]";
             }
         }
         
-        // Run immediately
         loadSavedTheme();
 
         // 2. Update toggle function to save the preference
@@ -329,8 +331,6 @@ let isLight = false;
             document.body.classList.toggle('light-mode');
             document.getElementById('theme-toggle').innerText = isLight ? "[ DARK_MODE ]" : "[ LIGHT_MODE ]";
             gridColor = isLight ? '0, 0, 0' : '255, 255, 255';
-            
-            // Save choice to this page's isolated memory
             localStorage.setItem('index_theme', isLight ? 'light' : 'dark');
         }
 
@@ -371,7 +371,6 @@ let isLight = false;
         const ctx = canvas.getContext('2d');
         let width, height;
         
-        
         let mouseX = window.innerWidth / 2;
         let mouseY = window.innerHeight / 2;
         let warpActive = false;
@@ -391,7 +390,6 @@ let isLight = false;
         window.addEventListener('mousemove', (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
-            
             if (mouseX > width / 2) {
                 originNode.targetX = 100;
             } else {
@@ -415,7 +413,8 @@ let isLight = false;
             const panel = document.getElementById('main-panel');
             if(!panel) return { top: 0, bottom: 0, left: 0, right: 0 };
             const rect = panel.getBoundingClientRect();
-            const padding = 30;
+            // CRITICAL FIX: Shrink the padding dramatically on mobile so canvas lines don't draw off-screen to the left!
+            const padding = window.innerWidth <= 768 ? 5 : 30; 
             return {
                 top: rect.top - padding,
                 bottom: rect.bottom + padding,
@@ -429,7 +428,6 @@ let isLight = false;
 
             const isMobile = width <= 768;
 
-            // AXIS LOGIC: Desktop (Horizontal) vs Mobile (Vertical)
             if (!isMobile) {
                 originNode.targetX = (mouseX > width / 2) ? 100 : width - 100;
                 originNode.x += (originNode.targetX - originNode.x) * 0.05;
@@ -454,17 +452,17 @@ let isLight = false;
             ctx.fillRect(originNode.x - originNode.width/2, originNode.y - originNode.height/2, originNode.width, originNode.height);
             ctx.shadowBlur = 0;
 
-            // DYNAMIC ROUTING PATHS
+            // DYNAMIC ROUTING PATHS (Mobile offsets tightened so they don't shift the UI perception to the left)
             const routes = !isMobile ? [
                 [ {x: originNode.x, y: originNode.y - 10}, {x: originNode.x, y: obs.top - 20}, {x: mouseX, y: obs.top - 20}, {x: mouseX, y: mouseY} ],
                 [ {x: originNode.x, y: originNode.y - 5}, {x: originNode.x, y: obs.top}, {x: mouseX, y: obs.top}, {x: mouseX, y: mouseY} ],
                 [ {x: originNode.x, y: originNode.y + 5}, {x: originNode.x, y: obs.bottom}, {x: mouseX, y: obs.bottom}, {x: mouseX, y: mouseY} ],
                 [ {x: originNode.x, y: originNode.y + 10}, {x: originNode.x, y: obs.bottom + 20}, {x: mouseX, y: obs.bottom + 20}, {x: mouseX, y: mouseY} ]
             ] : [
-                [ {x: originNode.x - 10, y: originNode.y}, {x: obs.left - 20, y: originNode.y}, {x: obs.left - 20, y: mouseY}, {x: mouseX, y: mouseY} ],
-                [ {x: originNode.x - 5, y: originNode.y}, {x: obs.left, y: originNode.y}, {x: obs.left, y: mouseY}, {x: mouseX, y: mouseY} ],
-                [ {x: originNode.x + 5, y: originNode.y}, {x: obs.right, y: originNode.y}, {x: obs.right, y: mouseY}, {x: mouseX, y: mouseY} ],
-                [ {x: originNode.x + 10, y: originNode.y}, {x: obs.right + 20, y: originNode.y}, {x: obs.right + 20, y: mouseY}, {x: mouseX, y: mouseY} ]
+                [ {x: originNode.x - 10, y: originNode.y}, {x: obs.left - 10, y: originNode.y}, {x: obs.left - 10, y: mouseY}, {x: mouseX, y: mouseY} ],
+                [ {x: originNode.x - 5, y: originNode.y}, {x: obs.left - 2, y: originNode.y}, {x: obs.left - 2, y: mouseY}, {x: mouseX, y: mouseY} ],
+                [ {x: originNode.x + 5, y: originNode.y}, {x: obs.right + 2, y: originNode.y}, {x: obs.right + 2, y: mouseY}, {x: mouseX, y: mouseY} ],
+                [ {x: originNode.x + 10, y: originNode.y}, {x: obs.right + 10, y: originNode.y}, {x: obs.right + 10, y: mouseY}, {x: mouseX, y: mouseY} ]
             ];
 
             if (warpActive) {
@@ -553,7 +551,7 @@ let isLight = false;
             }, 800); 
         }
     </script>
-
+    
     <script>
         (async () => {
             await new Promise(r => setTimeout(r, 2000));

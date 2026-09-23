@@ -419,24 +419,38 @@
     </div>
 
    <script>
-        // ── INDEPENDENT THEME (DEFAULTS TO DARK ON RELOAD) ────────
+       // ── ISOLATED HUB THEME ENGINE (WITH MEMORY) ────────
         let isLight = false;
         let gridColor = '255,255,255';
 
-        // Force reset on load just to be absolutely sure
-        document.body.classList.remove('light-mode');
-        document.getElementById('themeBtn').textContent = '[ LIGHT MODE ]';
+        // 1. Check saved Hub theme on load
+        function loadHubTheme() {
+            const savedTheme = localStorage.getItem('hub_theme'); 
+            if (savedTheme === 'light') {
+                isLight = true;
+                document.body.classList.add('light-mode');
+                document.getElementById('themeBtn').textContent = '[ DARK MODE ]';
+                gridColor = '0,0,0'; // Updates canvas color for desktop
+            } else {
+                isLight = false;
+                document.body.classList.remove('light-mode');
+                document.getElementById('themeBtn').textContent = '[ LIGHT MODE ]';
+                gridColor = '255,255,255';
+            }
+        }
+        
+        loadHubTheme(); // Run immediately
 
+        // 2. Toggle and save to isolated memory
         function toggleTheme() {
             isLight = !isLight;
             document.body.classList.toggle('light-mode');
             document.getElementById('themeBtn').textContent = isLight ? '[ DARK MODE ]' : '[ LIGHT MODE ]';
             gridColor = isLight ? '0,0,0' : '255,255,255';
             
-            // NO localStorage. NO parent syncing. 
-            // Completely isolated and resets on reload.
+            // Save choice strictly to the Hub's memory
+            localStorage.setItem('hub_theme', isLight ? 'light' : 'dark');
         }
-
         // ── MODULE NAVIGATION ─────────────────────────────────────
         function go(url) {
             if (window.parent && window.parent !== window && typeof window.parent.launchApp === 'function') {

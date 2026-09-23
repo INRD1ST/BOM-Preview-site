@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 🔥 CRITICAL FIX: maximum-scale=1.0 prevents iOS from zooming in on our new smaller input fonts! -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BOM OS - FNS Terminal</title>
     <link rel="icon" type="image/png" href="icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,7 +29,6 @@
             --panel-bg: rgba(255, 255, 255, 0.9);
         }
 
-        /* High contrast warning for Light Mode */
         body.light-mode #emptyRoutingWarning {
             background-color: #fef3c7 !important;
             border-color: #d97706 !important;
@@ -75,16 +75,17 @@
             transition: background 0.5s, border-color 0.5s;
         }
 
+        /* ═══ REDUCED INPUT STYLES ═══ */
         .input-dark {
             background: var(--bg-dark);
             border: 1px solid var(--border-color);
             color: var(--accent-main);
             border-radius: 0px;
-            padding: 12px;
+            padding: 10px 12px; /* Slimmer height */
             width: 100%;
             transition: 0.3s;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: 11px; /* Smaller typed text */
         }
         .input-dark:focus {
             outline: none;
@@ -94,12 +95,21 @@
         body.light-mode .input-dark:focus {
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
+        /* Smaller, uppercase placeholders to match the aesthetic */
+        .input-dark::placeholder {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent-muted);
+            opacity: 0.7;
+        }
 
+        /* ═══ REDUCED BUTTON STYLES ═══ */
         .btn-primary {
             background: var(--accent-main);
             color: var(--bg-dark);
             font-weight: 800;
-            padding: 12px 24px;
+            padding: 10px 16px; /* Slimmer padding */
             border-radius: 0px;
             transition: 0.3s;
             cursor: pointer;
@@ -107,7 +117,7 @@
             letter-spacing: 1px;
             border: 1px solid var(--accent-main);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
+            font-size: 10px; /* Smaller text */
             text-transform: uppercase;
         }
         .btn-primary:hover {
@@ -171,7 +181,6 @@
                 -webkit-overflow-scrolling: touch; 
             }
             
-            /* Turns the header into a perfectly aligned floating box on mobile */
             header {
                 width: calc(100% - 30px) !important;
                 margin: 15px auto 0 auto !important;
@@ -199,14 +208,11 @@
             
             #btnMint, #btnUpdate { width: 100% !important; justify-content: center; }
             
-            /* 16px font size on inputs strictly prevents iOS Safari from zooming in */
-            .input-dark { font-size: 16px !important; }
+            /* Removed the 16px input override because the viewport lock fixes the iOS zoom bug! */
         }
     </style>
 
-    <!-- ═══ BOM OVERMIND INTEGRATION ═══════════════════════════
-         Update OVERMIND_NODES after deploying to Railway/Render
-    ════════════════════════════════════════════════════════════ -->
+    <!-- ═══ BOM OVERMIND INTEGRATION ═══════════════════════════ -->
     <script>
         const OVERMIND_NODES = [
             'https://web-production-d64b0.up.railway.app',
@@ -315,7 +321,7 @@
                 </div>
                 <div class="flex gap-2 md:gap-4 mb-4">
                     <input type="text" id="resolveName" class="input-dark flex-1 min-w-0" placeholder="Query namespace..." autocomplete="off">
-                    <button onclick="executeResolve()" class="btn-primary shrink-0 px-4 md:w-32" id="btnResolve">QUERY</button>
+                    <button onclick="executeResolve()" class="btn-primary shrink-0 md:w-32" id="btnResolve">QUERY</button>
                 </div>
 
                 <div id="resolveResult" class="hidden mt-4 p-4 border border-[var(--border-color)] bg-black/20">
@@ -332,8 +338,9 @@
                     <div class="pt-4 border-t border-[var(--border-color)] mt-2">
                         <label class="text-[10px] text-[var(--accent-main)] font-bold uppercase mb-2 block">Update Spatial Routing</label>
                         <div class="flex gap-2">
-                            <input type="text" id="updateURI" class="input-dark text-xs flex-1 min-w-0" placeholder="New URI...">
-                            <button onclick="executeUpdate()" class="btn-primary py-2 px-4 shrink-0" id="btnUpdate">UPDATE</button>
+                            <input type="text" id="updateURI" class="input-dark flex-1 min-w-0" placeholder="New URI...">
+                            <!-- Stripped Tailwind padding overrides to force CSS sizing -->
+                            <button onclick="executeUpdate()" class="btn-primary shrink-0" id="btnUpdate">UPDATE</button>
                         </div>
                     </div>
                 </div>

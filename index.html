@@ -61,18 +61,10 @@
         body { 
             margin: 0; padding: 0; background-color: var(--bg); color: var(--text-main); 
             font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            height: 100dvh; /* ADD THIS: Mobile viewport fix */
-            overflow: hidden; 
+            justify-content: center; height: 100vh; overflow: hidden; 
             transition: background-color 0.5s, color 0.5s;
         }
 
-        /* ADD THIS: Tactile touch feedback for mobile */
-        .btn:active, .theme-toggle:active {
-            transform: scale(0.95) !important;
-            opacity: 0.8;
-        }
         #bg-canvas {
             position: absolute;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -311,31 +303,14 @@
     </div>
 
     <script>
-        <script>
-        // ── ISOLATED THEME ENGINE (PERSISTS ON RELOAD) ────────
-        let isLight = localStorage.getItem('index_theme') === 'light';
-        
-        // Use 'var' here so the canvas engine below can access it immediately
-        var gridColor = isLight ? '0, 0, 0' : '255, 255, 255'; 
-
-        // Apply saved theme immediately on boot
-        if (isLight) {
-            document.body.classList.add('light-mode');
-            window.addEventListener('DOMContentLoaded', () => {
-                const btn = document.getElementById('theme-toggle');
-                if (btn) btn.innerText = "[ DARK_MODE ]";
-            });
-        }
-
+        let isLight = false;
         function toggleTheme() {
             isLight = !isLight;
             document.body.classList.toggle('light-mode');
             document.getElementById('theme-toggle').innerText = isLight ? "[ DARK_MODE ]" : "[ LIGHT_MODE ]";
             gridColor = isLight ? '0, 0, 0' : '255, 255, 255';
-            
-            // Save state specifically to index.html's isolated memory
-            localStorage.setItem('index_theme', isLight ? 'light' : 'dark');
         }
+
         const phrases = [
             "INITIATING FISSION-FUSION ENGINE...",
             "BYPASSING ICANN ROOT SERVERS...",
@@ -372,6 +347,7 @@
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let width, height;
+        let gridColor = '255, 255, 255';
         
         let mouseX = window.innerWidth / 2;
         let mouseY = window.innerHeight / 2;

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <!-- 🔥 1. FAVICON (THE ULTIMATE TRUMP CARD) -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -165,23 +165,21 @@
         }
         body.light-mode .mobile-warning { color: #cc8f00; border-color: rgba(204, 143, 0, 0.3); }
 
-              @media (max-width: 768px) {
-            html, body {
-                overflow-x: hidden !important;
-                width: 100vw !important;
-                height: 100vh !important;
-            }
+             @media (max-width: 768px) {
             body {
-                display: block !important; /* Kills flexbox entirely */
-                padding: 0 !important;
-                margin: 0 !important;
+                display: block !important;
+                width: 100% !important;
+                height: 100vh !important;
+                overflow: hidden !important;
+                position: relative !important;
             }
             .container { 
-                position: absolute !important;
-                top: 22vh !important; /* Pulls it UP to a perfect sweet spot (not too low, not too high) */
-                left: 5% !important; /* Locks left gap to exactly 5% */
-                width: 90% !important; /* 5% left + 90% width = exactly 5% right gap left over. Perfect symmetry. */
                 margin: 0 !important;
+                position: absolute !important;
+                top: 53% !important; /* Perfect vertical center, just low enough to clear the top banner */
+                left: 50% !important; /* Absolute horizontal center */
+                transform: translate(-50%, -50%) !important; /* The trump card that forces perfect symmetry */
+                width: 90% !important; 
                 padding: 30px 15px !important;
                 box-sizing: border-box !important; 
             }
@@ -414,12 +412,12 @@
         window.addEventListener('resize', resize);
         resize();
 
-        function getObstacleBounds() {
+       function getObstacleBounds() {
             const panel = document.getElementById('main-panel');
             if(!panel) return { top: 0, bottom: 0, left: 0, right: 0 };
             const rect = panel.getBoundingClientRect();
-            // CRITICAL FIX: Shrink the padding dramatically on mobile so canvas lines don't draw off-screen to the left!
-            const padding = window.innerWidth <= 768 ? 5 : 30; 
+            // Changed mobile padding from 5 to 15 so lines route around the box safely
+            const padding = window.innerWidth <= 768 ? 15 : 30; 
             return {
                 top: rect.top - padding,
                 bottom: rect.bottom + padding,

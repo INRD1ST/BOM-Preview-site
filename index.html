@@ -165,13 +165,16 @@
         }
         body.light-mode .mobile-warning { color: #cc8f00; border-color: rgba(204, 143, 0, 0.3); }
 
-        @media (max-width: 768px) {
+       @media (max-width: 768px) {
             body {
-                flex-direction: column !important; /* Stacks layout perfectly on mobile */
+                flex-direction: column !important; 
                 align-items: center !important; /* Absolute horizontal center */
-                justify-content: flex-start !important; /* Starts drawing from the top */
-                padding-top: 100px !important; /* Clears the theme toggle securely */
-                width: 100% !important; /* Prevents overflow pushing left */
+                justify-content: flex-end !important; /* Pushes the panel to the bottom half */
+                padding: 0 !important; 
+                padding-bottom: 12vh !important; /* Suspends it perfectly above the bottom */
+                width: 100% !important; /* CRITICAL: 100% instead of 100vw prevents ANY left-shifting */
+                overflow-x: hidden !important; /* Kills invisible horizontal scrollbars */
+                box-sizing: border-box !important;
             }
             .omni-title { font-size: 30px; letter-spacing: 0.05em; margin-bottom: 10px; }
             .subtitle { font-size: 10px; line-height: 1.5; margin-bottom: 25px; padding: 0 10px; }
@@ -182,11 +185,11 @@
                 align-items: center; text-align: center; font-size: 9px; 
             }
             .container { 
-                margin: 0 !important; /* Strips flexbox interference */
+                margin: 0 !important; 
                 padding: 30px 15px; 
-                width: 90% !important; /* Locks exactly a 5% gap symmetrically */
+                width: 90% !important; /* Exact 90% width keeps it mathematically centered */
+                max-width: 90% !important;
                 box-sizing: border-box !important; 
-                position: relative !important;
             }
             .terminal-text { font-size: 9px; margin-bottom: 25px; }
             .theme-toggle { top: 40px; right: 10px; font-size: 9px; padding: 6px 10px; }

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOM Protocol | The ALL ONE Architecture</title>
+    <link rel="icon" type="image/png" href="icon.png?v=3">
+    <link rel="shortcut icon" href="icon.png?v=3">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Orbitron:wght@700;900&display=swap');
+        
+        :root {
+            --bg-black: #030303;
+            --bom-gold: #ffb300;
+            --mirror-green: #00e575;
+            --ai-blue: #00a3ff;
+            --vault-purple: #9d4edd;
+            --text-main: #ffffff;
+            --text-muted: #999999;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-black);
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            overflow-x: hidden;
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+        }
+
+        #scroll-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+        }
+
+        .step-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            opacity: 0.2;
+            transition: opacity 0.8s ease;
+        }
+
+        .step-section.active {
+            opacity: 1;
+        }
+
+        .glass-panel {
+            background: rgba(10, 10, 12, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 50px;
+            max-width: 550px; 
+            border-left: 4px solid var(--bom-gold);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+
+        .step-badge {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: var(--bom-gold);
+            margin-bottom: 20px;
+            display: inline-block;
+            border: 1px solid var(--bom-gold);
+            padding: 6px 10px;
+        }
+
+        .step-title {
+            font-size: 38px;
+            margin-bottom: 25px;
+            line-height: 1.2;
+        }
+
+        .step-desc {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .highlight { color: var(--text-main); font-weight: bold; }
+
+        /* 🔥 CLEAN SEPARATION FOR PHASE 6 (NO OVERLAP) */
+        #phase-6 {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 60px;
+            text-align: center;
+        }
+        #phase-6 .glass-panel {
+            max-width: 900px;
+            width: 100%;
+            border-left: none;
+            border-top: 4px solid var(--bom-gold);
+            background: rgba(0, 0, 0, 0.95);
+        }
+        /* Controlled here instead of via Tailwind's text-5xl/text-base utility
+           classes, so sizing can't ever race the Tailwind CDN's runtime
+           injection and it's simple to override per breakpoint below. */
+        #phase-6 .step-title {
+            font-size: 48px;
+        }
+        #phase-6 .step-desc {
+            font-size: 16px;
+        }
+
+        /* ============================================================
+           MOBILE (≤768px)
+           Everything above this point is the original desktop styling
+           and is left untouched. These rules only ever apply at or
+           below the tablet/phone breakpoint, and only change the
+           properties listed — anything not mentioned here (colors,
+           fonts, the phase-6 top border, etc.) still inherits from
+           the desktop rules above.
+           ============================================================ */
+        @media (max-width: 768px) {
+            .step-section {
+                /* Stack top-to-bottom instead of the desktop's left/right
+                   split, and pin the text card to the bottom of the
+                   screen so it sits below the (now smaller) canvas
+                   graphic instead of on top of it. */
+                flex-direction: column;
+                justify-content: flex-end;
+                padding: 0 20px 6vh;
+            }
+
+            .glass-panel {
+                width: 100%;
+                max-width: 480px;
+                padding: 26px 22px;
+                border-left-width: 3px;
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                box-sizing: border-box;
+            }
+
+            .step-badge {
+                font-size: 10px;
+                letter-spacing: 2px;
+                margin-bottom: 14px;
+                padding: 5px 8px;
+            }
+
+            .step-title {
+                font-size: 25px;
+                margin-bottom: 14px;
+            }
+
+            .step-desc {
+                font-size: 13px;
+                line-height: 1.65;
+                margin-bottom: 14px;
+            }
+
+            #phase-6 {
+                padding-bottom: 30px;
+            }
+            #phase-6 .glass-panel {
+                max-width: 480px;
+                padding: 26px 20px;
+            }
+            #phase-6 .step-title {
+                font-size: 28px;
+            }
+            #phase-6 .step-desc {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .step-title { font-size: 22px; }
+            .glass-panel { padding: 22px 18px; }
+            #phase-6 .step-title { font-size: 24px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="matrixCanvas"></canvas>
+
+    <div id="scroll-container">
+        
+        <section class="step-section active" data-phase="0">
+            <div class="glass-panel">
+                <div class="step-badge">[ LAYER 00 ]</div>
+                <h2 class="step-title orbitron text-white">Combinatorial<br>Identity <span class="text-[var(--bom-gold)]">(FNS)</span></h2>
+                <p class="step-desc">The foundation is pure. We mint absolute identities with <span class="highlight">zero extensions</span>.</p>
+                <p class="step-desc">Through the <strong>Interior Dot Matrix</strong>, a root word creates finite scarcity. The universe holds exactly one <strong>NEXUS</strong>. Variations like <strong>N.EXUS</strong> and <strong>NE.XUS</strong> form the immutable grid.</p>
+            </div>
+        </section>
+
+        <section class="step-section" data-phase="1">
+            <div class="glass-panel" style="border-color: var(--ai-blue);">
+                <div class="step-badge" style="color: var(--ai-blue); border-color: var(--ai-blue);">[ LAYER 01 ]</div>
+                <h2 class="step-title orbitron text-white">Mother Chain & <span class="text-[var(--ai-blue)]">Mother AI</span></h2>
+                <p class="step-desc">The sovereign ledger anchors the system. Living natively inside it is <strong>Mother AI</strong>.</p>
+                <p class="step-desc">She is a dynamic intelligence, absorbing complex algorithmic data strings and shaping raw blockchain state into living, executable architecture.</p>
+            </div>
+        </section>
+
+        <section class="step-section" data-phase="2">
+            <div class="glass-panel" style="border-color: var(--vault-purple);">
+                <div class="step-badge" style="color: var(--vault-purple); border-color: var(--vault-purple);">[ LAYER 02 ]</div>
+                <h2 class="step-title orbitron text-white">Vault & <span class="text-[var(--vault-purple)]">GPU Nodes</span></h2>
+                <p class="step-desc">The network drops its infrastructure into place.</p>
+                <p class="step-desc"><strong>Vault Nodes</strong> secure encrypted data fragments, while <strong>GPU Nodes</strong> supply raw decentralized computational fuel. They are the lungs and muscle feeding the AI core.</p>
+            </div>
+        </section>
+
+        <section class="step-section" data-phase="3">
+            <div class="glass-panel" style="border-color: #ff3366;">
+                <div class="step-badge" style="color: #ff3366; border-color: #ff3366;">[ LAYER 03 ]</div>
+                <h2 class="step-title orbitron text-white">D-MAIL & <span style="color: #ff3366;">World Chat</span></h2>
+                <p class="step-desc">The nodes begin to speak.</p>
+                <p class="step-desc">Encrypted communications route end-to-end bypassing legacy ICANN servers. <strong>D-MAIL</strong> and <strong>World Chat</strong> become the secure nervous system binding the identities together.</p>
+            </div>
+        </section>
+
+        <section class="step-section" data-phase="4">
+            <div class="glass-panel" style="border-color: var(--mirror-green);">
+                <div class="step-badge" style="color: var(--mirror-green); border-color: var(--mirror-green);">[ LAYER 04 ]</div>
+                <h2 class="step-title orbitron text-white">Mirror Chains & <span class="text-[var(--mirror-green)]">BOM Bank</span></h2>
+                <p class="step-desc">The Spawning Engine activates.</p>
+                <p class="step-desc">The system births <strong>Mirror Chains (L3s)</strong> for enterprise use on demand. Simultaneously, <strong>BOM Bank</strong> pumps tokenized economic value through the veins of the newly formed sub-networks.</p>
+            </div>
+        </section>
+
+        <section class="step-section" data-phase="5">
+            <div class="glass-panel" style="border-color: #fff;">
+                <div class="step-badge" style="color: #fff; border-color: #fff;">[ LAYER 05 ]</div>
+                <h2 class="step-title orbitron text-white">The Sovereign <span class="text-white">OS</span></h2>
+                <p class="step-desc">The Web3 Multiverse requires a gateway.</p>
+                <p class="step-desc">The <strong>BOM Browser</strong> frames the chaos, providing users a unified, command-driven OS interface to traverse the entire decentralized architecture effortlessly.</p>
+            </div>
+        </section>
+
+        <section class="step-section" id="phase-6" data-phase="6">
+            <div class="glass-panel">
+                <div class="step-badge">[ TOTAL FUSION ]</div>
+                <h2 class="step-title orbitron text-white mb-6">THE <span class="text-[var(--bom-gold)]">ALL ONE</span><br>SUPERCOMPUTER</h2>
+                <p class="step-desc mx-auto max-w-2xl">From the genesis of 1990s computing to the ultimate Web3 sovereign machine. BOM Protocol is not a collection of apps. It is a singular, living organism. Identity, Storage, Compute, Communication, and Finance—fully realized in the ultimate digital brain.</p>
+            </div>
+        </section>
+
+        <div style="height: 15vh;"></div>
+    </div>
+
+    <!-- The Advanced Choreography Engine -->
+    <script>
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, cx, cy;
+        let currentPhase = 0;
+        let time = 0;
+
+        const pW = 800; 
+        const pH = 500;
+        const MOBILE_BREAKPOINT = 768;
+
+        // Recomputes the canvas graphic's center, based on screen size and
+        // the current phase. Desktop math (isMobile === false) is byte-for-byte
+        // the original logic. Mobile gets its own vertical layout: the graphic
+        // sits higher up so the text card (bottom-anchored by CSS) has room
+        // below it instead of sitting on top of it.
+        function updateCenter() {
+            const isMobile = width <= MOBILE_BREAKPOINT;
+            if (currentPhase === 6) {
+                cx = width / 2;
+                cy = isMobile ? height * 0.32 : height * 0.35; // Shift canvas center UP in phase 6 so the monitor floats above text
+            } else if (isMobile) {
+                cx = width / 2;
+                cy = height * 0.26;
+            } else {
+                // Default desktop offset to the right
+                cx = width / 2 + width * 0.15;
+                cy = height / 2;
+            }
+        }
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            updateCenter();
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const pos = {
+            fns: { x: 0, y: 0, a: 1 },
+            ai: { x: 0, y: 0, a: 0 },
+            vault: { x: -pW/2.5, y: pH/2.5, a: 0 },
+            gpu: { x: pW/2.5, y: pH/2.5, a: 0 },
+            spawn: { x: 0, y: pH/2.5, a: 0 },
+            crtScale: 1,
+            crtAlpha: 0
+        };
+
+        const getTargets = (phase) => {
+            const isMobile = width <= MOBILE_BREAKPOINT;
+            const t = {
+                fns: { x: 0, y: 0, a: 0 },
+                ai: { x: 0, y: 0, a: 0 },
+                vault: { x: -pW/2.5, y: pH/2.5, a: 0 },
+                gpu: { x: pW/2.5, y: pH/2.5, a: 0 },
+                spawn: { x: 0, y: pH/2.5, a: 0 },
+                crtScale: isMobile ? 0.42 : 1, crtAlpha: 0
+            };
+            
+            if (phase >= 0) { t.fns = { x: 0, y: 0, a: 1 }; }
+            if (phase >= 1) { t.fns = { x: -pW/2.5, y: -pH/2.5, a: 1 }; t.ai = { x: 0, y: 0, a: 1 }; }
+            if (phase >= 2) { t.ai = { x: pW/2.5, y: -pH/2.5, a: 1 }; t.vault.a = 1; t.gpu.a = 1; }
+            if (phase >= 4) { t.spawn.a = 1; }
+            if (phase >= 6) { 
+                t.crtScale = isMobile ? 0.35 : 0.60; 
+                t.crtAlpha = 1; 
+            }
+            return t;
+        };
+
+        function lerp(start, end, amt) { return start + (end - start) * amt; }
+
+        const chars = "0123456789ABCDEFHIJKLMNOPQRSTUVWXYZ";
+        function getRandomChar() { return chars[Math.floor(Math.random() * chars.length)]; }
+
+        const fnsNames = ["NEXUS", "N.EXUS", "NE.XUS", "N.E.X.U.S"];
+
+        function drawCRTWireframe(ctx, alpha) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            const mWidth = pW * 1.15;
+            const mHeight = pH * 1.25;
+            const dx = 50; 
+            const dy = -50; 
+
+            // Back Wireframe
+            ctx.strokeStyle = 'rgba(255, 179, 0, 0.15)'; 
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.rect(-mWidth/2 + dx, -mHeight/2 + dy, mWidth, mHeight);
+            ctx.stroke();
+
+            // 3D Diagonals
+            ctx.strokeStyle = 'rgba(255, 179, 0, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(-mWidth/2, -mHeight/2); ctx.lineTo(-mWidth/2 + dx, -mHeight/2 + dy);
+            ctx.moveTo(mWidth/2, -mHeight/2); ctx.lineTo(mWidth/2 + dx, -mHeight/2 + dy);
+            ctx.moveTo(mWidth/2, mHeight/2); ctx.lineTo(mWidth/2 + dx, mHeight/2 + dy);
+            ctx.moveTo(-mWidth/2, mHeight/2); ctx.lineTo(-mWidth/2 + dx, mHeight/2 + dy);
+            ctx.stroke();
+
+            // Front Shell
+            ctx.strokeStyle = '#ffb300';
+            ctx.shadowColor = '#ffb300';
+            ctx.shadowBlur = 20;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.rect(-mWidth/2, -mHeight/2, mWidth, mHeight);
+            ctx.stroke();
+
+            // Inner Bezel
+            ctx.strokeStyle = '#00a3ff';
+            ctx.shadowColor = '#00a3ff';
+            ctx.shadowBlur = 15;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.rect(-pW/2 - 15, -pH/2 - 15, pW + 30, pH + 30);
+            ctx.stroke();
+
+            // Vents
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#fff';
+            ctx.lineWidth = 2;
+            for(let i=0; i<8; i++) {
+                ctx.beginPath();
+                ctx.moveTo(mWidth/2 - 140 + (i*14), mHeight/2 - 40);
+                ctx.lineTo(mWidth/2 - 140 + (i*14), mHeight/2 - 15);
+                ctx.stroke();
+            }
+
+            // Power Hexagon
+            ctx.strokeStyle = '#00e575';
+            ctx.shadowColor = '#00e575';
+            ctx.shadowBlur = 15;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for(let i=0; i<6; i++) {
+                const angle = (Math.PI*2/6)*i;
+                const hx = -mWidth/2 + 80 + Math.cos(angle)*16;
+                const hy = mHeight/2 - 27 + Math.sin(angle)*16;
+                if(i===0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            ctx.beginPath(); 
+            ctx.moveTo(-mWidth/2 + 80, mHeight/2 - 35); 
+            ctx.lineTo(-mWidth/2 + 80, mHeight/2 - 27); 
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function draw() {
+            const t = getTargets(currentPhase);
+            for(let k of ['fns', 'ai', 'vault', 'gpu', 'spawn']) {
+                pos[k].x = lerp(pos[k].x, t[k].x, 0.05);
+                pos[k].y = lerp(pos[k].y, t[k].y, 0.05);
+                pos[k].a = lerp(pos[k].a, t[k].a, 0.05);
+            }
+            pos.crtScale = lerp(pos.crtScale, t.crtScale, 0.04);
+            pos.crtAlpha = lerp(pos.crtAlpha, t.crtAlpha, 0.03);
+
+            time += 0.03;
+
+            ctx.fillStyle = '#030303';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(pos.crtScale, pos.crtScale);
+
+            if (pos.crtAlpha > 0.01) {
+                drawCRTWireframe(ctx, pos.crtAlpha);
+            }
+
+            // Panel Background
+            ctx.fillStyle = '#0a0a0d';
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.rect(-pW/2, -pH/2, pW, pH);
+            ctx.fill(); ctx.stroke();
+
+            ctx.beginPath(); ctx.rect(-pW/2, -pH/2, pW, pH); ctx.clip();
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            for(let i=-pW/2; i<pW/2; i+=40) { ctx.beginPath(); ctx.moveTo(i, -pH/2); ctx.lineTo(i, pH/2); ctx.stroke(); }
+            for(let i=-pH/2; i<pH/2; i+=40) { ctx.beginPath(); ctx.moveTo(-pW/2, i); ctx.lineTo(pW/2, i); ctx.stroke(); }
+
+            ctx.lineWidth = 1;
+            if (pos.ai.a > 0.1) {
+                ctx.strokeStyle = `rgba(0, 163, 255, ${pos.ai.a * 0.5})`;
+                ctx.beginPath(); ctx.moveTo(pos.fns.x, pos.fns.y); ctx.lineTo(pos.ai.x, pos.ai.y); ctx.stroke();
+            }
+            if (pos.vault.a > 0.1) {
+                ctx.strokeStyle = `rgba(157, 78, 221, ${pos.vault.a * 0.5})`;
+                ctx.beginPath(); ctx.moveTo(pos.ai.x, pos.ai.y); ctx.lineTo(pos.vault.x, pos.vault.y); ctx.lineTo(pos.fns.x, pos.fns.y); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(pos.ai.x, pos.ai.y); ctx.lineTo(pos.gpu.x, pos.gpu.y); ctx.lineTo(pos.fns.x, pos.fns.y); ctx.stroke();
+            }
+
+            if (pos.fns.a > 0.01) {
+                ctx.globalAlpha = pos.fns.a;
+                ctx.save(); ctx.translate(pos.fns.x, pos.fns.y);
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI*2); ctx.fill();
+                
+                for(let i=0; i<3; i++) {
+                    const angle = time + (Math.PI*2/3)*i;
+                    ctx.beginPath(); ctx.arc(Math.cos(angle)*40, Math.sin(angle)*40, 3, 0, Math.PI*2); ctx.fill();
+                }
+                
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = "14px 'JetBrains Mono'";
+                ctx.textAlign = "center";
+                const nameIdx = Math.floor(time * 0.5) % fnsNames.length;
+                ctx.fillText(fnsNames[nameIdx], 0, 60);
+                ctx.restore();
+            }
+
+            if (pos.ai.a > 0.01) {
+                ctx.globalAlpha = pos.ai.a;
+                ctx.save(); ctx.translate(pos.ai.x, pos.ai.y);
+                
+                ctx.fillStyle = 'rgba(0, 163, 255, 0.2)';
+                ctx.strokeStyle = '#00a3ff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for(let i=0; i<6; i++) {
+                    const angle = (Math.PI*2/6)*i + time*0.5;
+                    const radius = 40 + Math.sin(time*3 + i)*15;
+                    if(i===0) ctx.moveTo(Math.cos(angle)*radius, Math.sin(angle)*radius);
+                    else ctx.lineTo(Math.cos(angle)*radius, Math.sin(angle)*radius);
+                }
+                ctx.closePath();
+                ctx.fill(); ctx.stroke();
+
+                ctx.fillStyle = '#00a3ff';
+                ctx.font = "12px 'JetBrains Mono'";
+                ctx.textAlign = "left";
+                for(let i=0; i<5; i++) {
+                    const yOffset = (time * 20 + i*15) % 100 - 50;
+                    ctx.fillText(getRandomChar() + getRandomChar(), 60, yOffset);
+                }
+                ctx.restore();
+            }
+
+            if (pos.vault.a > 0.01) {
+                ctx.globalAlpha = pos.vault.a;
+                ctx.fillStyle = '#9d4edd';
+                ctx.strokeStyle = '#fff';
+                ctx.fillRect(pos.vault.x - 25, pos.vault.y - 35, 50, 70);
+                ctx.strokeRect(pos.vault.x - 25, pos.vault.y - 35, 50, 70);
+                
+                ctx.fillStyle = '#333';
+                ctx.strokeStyle = '#9d4edd';
+                ctx.fillRect(pos.gpu.x - 30, pos.gpu.y - 25, 60, 50);
+                ctx.strokeRect(pos.gpu.x - 30, pos.gpu.y - 25, 60, 50);
+                ctx.beginPath(); ctx.moveTo(pos.gpu.x - 30, pos.gpu.y); ctx.lineTo(pos.gpu.x + 30, pos.gpu.y); ctx.stroke();
+            }
+
+            if (currentPhase >= 3) {
+                ctx.globalAlpha = 1;
+                ctx.setLineDash([5, 15]);
+                ctx.lineDashOffset = -time * 20;
+                ctx.strokeStyle = '#ff3366';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(pos.vault.x, pos.vault.y); ctx.lineTo(pos.gpu.x, pos.gpu.y);
+                ctx.moveTo(pos.fns.x, pos.fns.y); ctx.lineTo(pos.gpu.x, pos.gpu.y);
+                ctx.stroke();
+                ctx.setLineDash([]); 
+
+                if (Math.random() < 0.05) {
+                    ctx.fillStyle = '#ff3366';
+                    ctx.font = "11px 'JetBrains Mono'";
+                    ctx.fillText("[ROUTING]", pos.vault.x + 60, pos.vault.y - 15);
+                }
+            }
+
+            if (pos.spawn.a > 0.01) {
+                ctx.globalAlpha = pos.spawn.a;
+                ctx.fillStyle = '#00e575';
+                ctx.shadowBlur = 20; ctx.shadowColor = '#00e575';
+                ctx.fillRect(pos.spawn.x - 50, pos.spawn.y - 15, 100, 30);
+                ctx.shadowBlur = 0;
+                
+                ctx.fillStyle = '#00e575';
+                ctx.strokeStyle = '#fff';
+                for(let i=0; i<3; i++) {
+                    const eY = pos.spawn.y - 40 - ((time*20 + i*40) % 120);
+                    ctx.fillRect(pos.spawn.x - 12, eY, 24, 24);
+                    ctx.strokeRect(pos.spawn.x - 12, eY, 24, 24);
+                }
+
+                ctx.fillStyle = '#ffb300';
+                for(let i=0; i<6; i++) {
+                    const pX = pos.spawn.x + Math.sin(time*2 + i)*120;
+                    const pY = pos.spawn.y - ((time*30 + i*40) % 250);
+                    ctx.beginPath(); ctx.arc(pX, pY, 4, 0, Math.PI*2); ctx.fill();
+                }
+            }
+
+            if (currentPhase >= 5) {
+                ctx.globalAlpha = (currentPhase === 5) ? 1 : pos.crtAlpha; 
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 4;
+                const hW = pW/2 - 25;
+                const hH = pH/2 - 25;
+                const edge = 40;
+                
+                ctx.beginPath();
+                ctx.moveTo(-hW, -hH + edge); ctx.lineTo(-hW, -hH); ctx.lineTo(-hW + edge, -hH);
+                ctx.moveTo(hW - edge, -hH); ctx.lineTo(hW, -hH); ctx.lineTo(hW, -hH + edge);
+                ctx.moveTo(-hW, hH - edge); ctx.lineTo(-hW, hH); ctx.lineTo(-hW + edge, hH);
+                ctx.moveTo(hW - edge, hH); ctx.lineTo(hW, hH); ctx.lineTo(hW, hH - edge);
+                ctx.stroke();
+
+                ctx.fillStyle = '#fff';
+                ctx.font = "14px 'JetBrains Mono'";
+                ctx.textAlign = "left";
+                ctx.fillText("BOM_OS // WEB3_GATEWAY_OPEN", -hW, -hH - 5);
+            }
+
+            if (currentPhase >= 6) {
+                ctx.fillStyle = 'rgba(255,255,255,0.02)';
+                ctx.beginPath();
+                ctx.moveTo(-pW/2, -pH/2);
+                ctx.lineTo(pW/2, pH/2);
+                ctx.lineTo(pW/2, -pH/2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        const sections = document.querySelectorAll('.step-section');
+        const observerOptions = { root: null, rootMargin: '-40% 0px -40% 0px', threshold: 0 };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    sections.forEach(s => s.classList.remove('active'));
+                    entry.target.classList.add('active');
+                    currentPhase = parseInt(entry.target.getAttribute('data-phase'));
+                    updateCenter();
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(sec => observer.observe(sec));
+    </script>
+</body>
+</html>
